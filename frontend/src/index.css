@@ -1,0 +1,194 @@
+/* ========================================
+   FreshRoute Design System v2.0
+   Premium UI/UX Transformation
+   ======================================== */
+
+@import "tailwindcss";
+
+/* ========================================
+   CSS Design Tokens
+   ======================================== */
+
+/* Light Theme Variables (default) */
+:root {
+  --background: #F7F9F6;
+  --surface: #FFFFFF;
+  --elevated: #FFFFFF;
+  --primary: #176B45;
+  --primary-hover: #105638;
+  --primary-active: #0A4A33;
+  --accent: #B7E36A;
+  --accent-dim: #96C25E;
+  --primary-text: #17211B;
+  --secondary-text: #66736A;
+  --muted-text: #88998F;
+  --border: #E1E8E1;
+  --border-light: #F0F5F1;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #6366F1;
+
+  /* Background gradients for depth */
+  --gradient-primary: linear-gradient(135deg, #176B45 0%, #105638 100%);
+  --gradient-accent: linear-gradient(135deg, #B7E36A 0%, #96C25E 100%);
+  --gradient-card: linear-gradient(180deg, #FFFFFF 0%, #F7F9F6 100%);
+}
+
+/* Dark Theme Variables (explicit dark mode) */
+[data-theme="dark"] {
+  --background: #101713;
+  --surface: #171F1A;
+  --elevated: #202B23;
+  --primary: #65D99A;
+  --primary-hover: #3DD88F;
+  --primary-active: #25C589;
+  --accent: #C6ED83;
+  --accent-dim: #9FD46A;
+  --primary-text: #EDF5EE;
+  --secondary-text: #A0B0A5;
+  --muted-text: #78857A;
+  --border: #2C3930;
+  --border-light: #1E2A23;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --error: #F87171;
+  --info: #A5F3FC;
+}
+
+/* Safari/iOS */
+@media not (color) {
+  :root {
+    --background: #F7F9F6;
+    --surface: #FFFFFF;
+  }
+}
+
+/* ========================================
+   Reduced Motion Prefers
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 150ms ease-in-out;
+    --transition-normal: 200ms ease-in-out;
+    --transition-slow: 300ms ease-in-out;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 150ms !important;
+  }
+}
+
+/* ========================================
+   Body and Base Styles
+   ======================================== */
+body {
+  font-family: 'Inter', 'Geist Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--background);
+  color: var(--primary-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular numeral support for tables */
+.table-num {
+  font-variant-numeric: tabular-nums;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Source Code Pro', monospace;
+}
+
+/* Link styles */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-normal);
+}
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* ========================================
+   Custom focus ring
+   ======================================== */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Smooth transition for all properties */
+.smooth-transition {
+  transition: all var(--transition-normal) ease-in-out;
+}
+
+/* Hide focus outline but keep accessibility */
+.no-focus-outline:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Focus-visible only */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   Scrollbar Styles
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--border-light);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-text);
+}
+
+/* ========================================
+   Selection Style
+   ======================================== */
+::selection {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+/* ========================================
+   PreflightBase - opinionated base
+   ======================================== */
+@layer base {
+  :root {
+    --bg: var(--background);
+    --surface: var(--surface);
+    --primary: var(--primary);
+    --primary-hover: var(--primary-hover);
+    --primary-text: var(--primary-text);
+    --secondary-text: var(--secondary-text);
+    --border: var(--border);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--primary-text);
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* Prevent autoresizing text under magnification */
+  html {
+    -webkit-text-size-adjust: 100%;
+    size: 100%;
+  }
+
+  /* Remove focus outlines for non-interactive elements */
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
