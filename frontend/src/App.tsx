@@ -32,7 +32,7 @@ import type {
   DashboardMetrics, 
   Scenario 
 } from './types';
-import { CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { CheckCircle, AlertCircle, Search, ShieldCheck } from 'lucide-react';
 
 export function App() {
   const { mode, toggled } = useTheme();

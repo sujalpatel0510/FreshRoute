@@ -14,33 +14,18 @@ const ThemeContext = createContext<{
 });
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [mode, setMode] = useState<ThemeMode>('system');
-  const [isUserSet, setIsUserSet] = useState<boolean>(false);
-
-  // Initialize from localStorage or system preference
-  useEffect(() => {
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    // Initialize from localStorage during render (not in effect)
     const stored = localStorage.getItem('freshroute-theme');
     if (stored === 'light' || stored === 'dark') {
-      setMode(stored as ThemeMode);
-      setIsUserSet(true);
-      const html = document.documentElement;
-      html.dataset.theme = stored;
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setMode(prefersDark ? 'dark' : 'light');
-      const html = document.documentElement;
-      html.dataset.theme = prefersDark ? 'dark' : 'light';
+      return stored as ThemeMode;
     }
-  }, []);
+    // Check system preference
+    const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  });
 
-  // Persist to localStorage when user explicitly changes
-  useEffect(() => {
-    if (!isUserSet) return;
-    localStorage.setItem('freshroute-theme', mode);
-  }, [mode, isUserSet]);
-
-  // Sync data-theme attribute on mount/unmount
+  // Persist to localStorage when user explicitly changes (outside of effect)
   useEffect(() => {
     const html = document.documentElement;
     if (mode === 'system') {
@@ -48,11 +33,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } else {
       html.dataset.theme = mode;
     }
+    localStorage.setItem('freshroute-theme', mode);
   }, [mode]);
 
   const setModeHandler = (newMode: ThemeMode) => {
     setMode(newMode);
-    setIsUserSet(newMode !== 'system');
   };
 
   const toggle = () => {

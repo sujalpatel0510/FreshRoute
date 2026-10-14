@@ -134,7 +134,9 @@ export const CustomCursor: React.FC = () => {
   }
 
   return (
-    <div className="fresh-cursor-dot" ref={dotRef} />
-    <div className="fresh-cursor-ring" ref={ringRef} />
+    <>
+      <div className="fresh-cursor-dot" ref={dotRef} />
+      <div className="fresh-cursor-ring" ref={ringRef} />
+  </>
   );
 };

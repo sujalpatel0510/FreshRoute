@@ -453,11 +453,11 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                     {isSubmitting ? 'Saving...' : editingBatch ? 'Save Changes' : 'Register Batch'}
                   </button>
                 </div>
+                </div>
               </form>
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 };

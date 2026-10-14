@@ -81,8 +81,8 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
                 : 'bg-surface/50 hover:bg-surface/80 text-var(--muted-text)'`
             }`}
           >
-            <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? 'Solving Engine...' : strategy === 'freshroute' ? 'Optimize FreshRoute Plan' : 'Generate Baseline Plan'}</span>
+            <Zap className="w-4 h-4 " + (loading ? "animate-spin" : "")} />
+            {loading ? 'Solving Engine...' : strategy === 'freshroute' ? 'Optimize FreshRoute Plan' : 'Generate Baseline Plan'}
           </button>
         </div>
 
@@ -95,7 +95,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
               <button
                 type="button"
                 onClick={() => setStrategy('freshroute')}
-                className={`py-1.5 text-center font-bold rounded-md transition-all ${
+                className="py-1.5 text-center font-bold rounded-md transition-all " + (
                   strategy === 'freshroute'
                     ? 'bg-primary/20 text-primary border var(--primary)/30'
                     : 'text-var(--muted-text) hover:text-var(--primary)'
@@ -106,8 +106,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
               <button
                 type="button"
                 onClick={() => setStrategy('baseline')}
-                className={`py-1.5 text-center font-bold rounded-md transition-all ${
-                  strategy === 'baseline'
+                className="py-1.5 text-center font-bold rounded-md transition-all " + (strategy === "baseline" ? "bg-primary" : "text")
                     ? 'bg-white text-var(--primary-500) shadow-xs'
                     : 'text-var(--muted-text) hover:text-var(--primary)'
                 }`}

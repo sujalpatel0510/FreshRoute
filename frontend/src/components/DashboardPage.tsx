@@ -33,7 +33,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   isOptimizing,
   recentPlan,
 }) => {
-  const { mode } = useTheme();
+  
 
   if (loading || !metrics) {
     return (
@@ -133,8 +133,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         {kpis.map((kpi, idx) => {
           const Icon = kpi.icon;
           const isRisk = kpi.title === 'Batches at Expiry Risk';
-          const valueColor = isRisk && kpi.value > 0 ? 'var(--warning)' : 'var(--primary)';
-          const bgColor = isRisk && kpi.value > 0 ? 'var(--warning)/10' : 'var(--primary)/10';
           const borderColor = isRisk && kpi.value > 0 ? 'var(--warning)/30' : 'var(--primary)/30';
 
           return (

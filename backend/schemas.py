@@ -122,7 +122,7 @@ class DiscountRecommendationOut(BaseModel):
     discounted_price: float
     risk_level: str
     reason: str
-    expected_margin_impact: float
+    expected_margin_impact: str
 
     class Config:
         from_attributes = True

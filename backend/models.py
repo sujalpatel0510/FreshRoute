@@ -132,7 +132,7 @@ class DiscountRecommendation(Base):
     discounted_price = Column(Float, nullable=False)
     risk_level = Column(String(50), nullable=False)  # critical, high_risk, candidate, none
     reason = Column(Text, nullable=False)
-    expected_margin_impact = Column(Float, nullable=False)
+    expected_margin_impact = Column(Text, nullable=False)
 
     plan = relationship("DistributionPlan", back_populates="discount_recommendations")
 
