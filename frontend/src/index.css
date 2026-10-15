@@ -154,7 +154,9 @@ html, body {
    verifies pointer:fine && no reduced-motion.
    ======================================== */
 html.fresh-cursor-on,
-html.fresh-cursor-on * {
+html.fresh-cursor-on *,
+html.fresh-cursor-on *::before,
+html.fresh-cursor-on *::after {
   cursor: none !important;
 }
 @media (prefers-reduced-motion: reduce) {

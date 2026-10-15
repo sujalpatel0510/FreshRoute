@@ -20,8 +20,11 @@ from .schemas import (
     BatchUpdate,
     BatchOut,
     DestinationCreate,
+    DestinationUpdate,
     DestinationOut,
     DemandCreate,
+    DemandCreateIn,
+    DemandUpdate,
     DemandOut,
     PlanOut,
     OptimizeRequest,
@@ -225,6 +228,74 @@ def create_destination(dest_in: DestinationCreate, db: Session = Depends(get_db)
     db.commit()
     db.refresh(dest)
     return dest
+
+@app.put("/api/destinations/{dest_id}", response_model=DestinationOut, tags=["Destinations"])
+def update_destination(dest_id: int, dest_in: DestinationUpdate, db: Session = Depends(get_db)):
+    dest = db.query(Destination).filter(Destination.id == dest_id).first()
+    if not dest:
+        raise HTTPException(status_code=404, detail="Destination not found")
+    
+    update_data = dest_in.dict(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(dest, field, val)
+        
+    db.commit()
+    db.refresh(dest)
+    return dest
+
+@app.delete("/api/destinations/{dest_id}", tags=["Destinations"])
+def delete_destination(dest_id: int, db: Session = Depends(get_db)):
+    dest = db.query(Destination).filter(Destination.id == dest_id).first()
+    if not dest:
+        raise HTTPException(status_code=404, detail="Destination not found")
+        
+    db.query(Demand).filter(Demand.destination_id == dest_id).delete()
+    db.query(TransportOption).filter(TransportOption.destination_id == dest_id).delete()
+    db.delete(dest)
+    db.commit()
+    return {"status": "success", "message": f"Destination {dest.name} deleted successfully"}
+
+@app.post("/api/destinations/{dest_id}/demands", response_model=DemandOut, status_code=status.HTTP_201_CREATED, tags=["Destinations"])
+def add_destination_demand(dest_id: int, demand_in: DemandCreateIn, db: Session = Depends(get_db)):
+    dest = db.query(Destination).filter(Destination.id == dest_id).first()
+    if not dest:
+        raise HTTPException(status_code=404, detail="Destination not found")
+        
+    dm = Demand(
+        destination_id=dest_id,
+        commodity=demand_in.commodity,
+        demand_quantity=demand_in.demand_quantity,
+        selling_price=demand_in.selling_price,
+        delivery_deadline_hours=demand_in.delivery_deadline_hours
+    )
+    db.add(dm)
+    db.commit()
+    db.refresh(dm)
+    return dm
+
+@app.put("/api/demands/{demand_id}", response_model=DemandOut, tags=["Destinations"])
+def update_demand(demand_id: int, demand_in: DemandUpdate, db: Session = Depends(get_db)):
+    dm = db.query(Demand).filter(Demand.id == demand_id).first()
+    if not dm:
+        raise HTTPException(status_code=404, detail="Demand not found")
+        
+    update_data = demand_in.dict(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(dm, field, val)
+        
+    db.commit()
+    db.refresh(dm)
+    return dm
+
+@app.delete("/api/demands/{demand_id}", tags=["Destinations"])
+def delete_demand(demand_id: int, db: Session = Depends(get_db)):
+    dm = db.query(Demand).filter(Demand.id == demand_id).first()
+    if not dm:
+        raise HTTPException(status_code=404, detail="Demand not found")
+        
+    db.delete(dm)
+    db.commit()
+    return {"status": "success", "message": "Demand deleted successfully"}
 
 # ----------------- Scenarios ----------------- #
 @app.get("/api/scenarios", response_model=List[ScenarioOut], tags=["Scenarios"])

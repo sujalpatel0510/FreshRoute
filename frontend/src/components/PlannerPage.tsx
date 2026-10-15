@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { DistributionPlan, Scenario } from '../types';
 import { Tooltip } from './Tooltip';
+import { CustomSelect } from './CustomSelect';
 
 interface PlannerPageProps {
   plan: DistributionPlan | null;
@@ -133,17 +134,15 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
                 <Info className="w-3 h-3 text-muted-text cursor-help" />
               </Tooltip>
             </div>
-            <select
+            <CustomSelect
               value={selectedScenario}
-              onChange={(e) => setSelectedScenario(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text font-medium focus:border-primary focus:outline-none"
-            >
-              {scenarios.map((sc) => (
-                <option key={sc.key} value={sc.key}>
-                  {sc.name}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedScenario(val)}
+              options={scenarios.map((sc) => ({
+                value: sc.key,
+                label: sc.name,
+                badge: sc.key !== 'normal' ? 'Disruption' : 'Standard',
+              }))}
+            />
           </div>
 
           {/* Shelf Life Buffer */}

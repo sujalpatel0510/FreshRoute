@@ -117,11 +117,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Executive Hero Banner */}
-      <div data-pointer-glow className="relative overflow-hidden rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-xs">
+      <div data-pointer-glow className="relative overflow-hidden rounded-3xl bg-surface border border-border/80 p-6 sm:p-8 shadow-sm">
         <div className="relative z-10 max-w-4xl space-y-3">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
             <Zap className="w-3.5 h-3.5 text-accent" />
-            <span>Problem Statement PS 03 · Indian MoFPI Study Grounding (54 Commodities · 15 Agro-Climatic Zones · 2020–22 Reference)</span>
+            <span>Problem Statement PS 03 · Indian MoFPI Grounding (54 Commodities · 15 Zones)</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary-text">
@@ -129,13 +129,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </h1>
 
           <p className="text-sm leading-relaxed text-secondary-text max-w-3xl">
-            Tackling India's post-harvest loss crisis (7.3%–12.4% in perishables) through First-Expiring-First-Out (FEFO) dispatch 
-            prioritization, dynamic route feasibility checks, destination gate intake guards, and transparent markdown discounting.
+            Tackling post-harvest losses through First-Expiring-First-Out (FEFO) dispatch prioritization, route feasibility checks, gate intake limits, and transparent markdown discounting.
           </p>
 
           {/* Action Row */}
           <div className="pt-2 flex flex-wrap items-center gap-3">
-            <Tooltip text="Execute deterministic FEFO multi-objective allocation solver">
+            <Tooltip text="Run FEFO optimizer">
               <button
                 onClick={onRunQuickOptimize}
                 disabled={isOptimizing}
@@ -143,26 +142,26 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 className="btn-press flex items-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white dark:text-neutral-950 font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer"
               >
                 <Zap className="w-4 h-4 text-accent dark:text-neutral-950" />
-                <span>{isOptimizing ? 'Computing Optimal Plan...' : 'Run FreshRoute FEFO Optimizer'}</span>
+                <span>{isOptimizing ? 'Computing Plan...' : 'Run FreshRoute Optimizer'}</span>
               </button>
             </Tooltip>
 
-            <Tooltip text="Simulate uncoordinated first-in-first-out baseline strategy">
+            <Tooltip text="Compare with FIFO baseline">
               <button
                 onClick={onRunQuickBaseline}
                 disabled={isOptimizing}
                 className="btn-press flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-elevated hover:bg-border/60 text-secondary-text font-medium text-xs border border-border disabled:opacity-50 cursor-pointer"
               >
-                <span>Compare with Baseline (FIFO)</span>
+                <span>Compare with Baseline</span>
               </button>
             </Tooltip>
 
-            <Tooltip text="Stress test supply chain under heatwaves, transport strikes and demand shocks">
+            <Tooltip text="Run stress scenarios">
               <button
                 onClick={() => onNavigate('simulator')}
                 className="btn-press flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-elevated hover:bg-border/60 text-primary font-medium text-xs border border-primary/30 cursor-pointer ml-auto"
               >
-                <span>Run Stress Scenarios</span>
+                <span>Stress Scenarios</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </Tooltip>
@@ -180,12 +179,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         {kpis.map((kpi, idx) => {
           const Icon = kpi.icon;
           const kpiTooltips: Record<string, string> = {
-            'Total Active Stock': 'Total metric weight of perishable inventory held in regional cold-storage hubs',
-            'Critical Batches': 'Batches requiring emergency dispatch within the next 24 shelf-life hours',
-            'Wholesale APMC Demand': 'Sum of all unfulfilled market demand across active destination mandis',
-            'Modeled Net Revenue': 'Net revenue after transport tariffs, handling costs, and markdown discounts',
-            'Demand Fulfillment': 'Percentage of destination wholesale demand successfully allocated and scheduled',
-            'Infeasible Dispatches Blocked': 'Number of transit-spoiled or capacity-violating allocations successfully prevented',
+            'Available Inventory': 'Total active produce stock',
+            'Batches at Expiry Risk': 'Lots with ≤24h shelf life',
+            'Destination Demand': 'Total APMC mandi demand',
+            'Modeled Net Revenue': 'Net revenue after freight & discounts',
+            'Demand Fulfillment': 'Fulfilled demand percentage',
+            'Transit Spoilage Prevented': 'Infeasible dispatches blocked',
           };
 
           return (
@@ -195,7 +194,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               wrapperClassName="w-full h-full block"
             >
               <div
-                className="stagger-card bg-surface border border-border rounded-xl p-4 shadow-xs hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col justify-between h-full cursor-help"
+                className="stagger-card bg-surface border border-border/80 rounded-2xl p-4 shadow-xs hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-md transition-all duration-150 flex flex-col justify-between h-full cursor-help"
               >
                 <div>
                   <div className="flex items-center justify-between">
@@ -226,7 +225,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Two Column Layout: Urgent Alerts & Active Plan Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Urgent Risk Alerts (Left 5 Cols) */}
-        <div className="lg:col-span-5 bg-surface rounded-2xl border border-border p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-surface rounded-3xl border border-border/80 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -301,7 +300,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         </div>
 
         {/* Current Plan Overview (Right 7 Cols) */}
-        <div className="lg:col-span-7 bg-surface rounded-2xl border border-border p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-surface rounded-3xl border border-border/80 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>

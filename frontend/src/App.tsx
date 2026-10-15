@@ -21,6 +21,11 @@ import {
   updateBatch, 
   deleteBatch, 
   createDestination,
+  updateDestination,
+  deleteDestination,
+  createDemand,
+  updateDemand,
+  deleteDemand,
   resetDatabaseSeed 
 } from './api';
 
@@ -95,33 +100,7 @@ export function App() {
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), []);
 
-  // ---- Page transition: crossfade. The outgoing page fades out in an
-  // absolute layer while the incoming page enters immediately — the two
-  // overlap, so there is never a blank frame between them. ----
-  const [displayedTab, setDisplayedTab] = useState<string>(activeTab);
-  const [exitingTab, setExitingTab] = useState<string | null>(null);
-  const exitTimerRef = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (activeTab === displayedTab) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) {
-      setDisplayedTab(activeTab);
-      setExitingTab(null);
-      return;
-    }
-    const prevTab = displayedTab;
-    setExitingTab(prevTab);
-    setDisplayedTab(activeTab);
-    // Deliberately not cleared in this effect's cleanup: the cleanup also
-    // runs when displayedTab updates, which would strand the exit layer.
-    // Superseding navigations clear the timer before setting a new one.
-    window.clearTimeout(exitTimerRef.current);
-    exitTimerRef.current = window.setTimeout(() => setExitingTab(null), 160);
-  }, [activeTab, displayedTab]);
-
-  useEffect(() => () => window.clearTimeout(exitTimerRef.current), []);
-
+  // Direct, high-performance page rendering — zero double-mount lag
   const renderPage = (tab: string) => {
     switch (tab) {
       case 'inventory':
@@ -140,6 +119,11 @@ export function App() {
             destinations={destinations}
             loading={loading}
             onAddDestination={handleAddDestination}
+            onUpdateDestination={handleUpdateDestination}
+            onDeleteDestination={handleDeleteDestination}
+            onAddDemand={handleAddDemand}
+            onUpdateDemand={handleUpdateDemand}
+            onDeleteDemand={handleDeleteDemand}
           />
         );
       case 'planner':
@@ -229,26 +213,21 @@ export function App() {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [dashData, batchData, destData, scData] = await Promise.all([
+      const [dashData, batchData, destData, scData, simComp] = await Promise.all([
         fetchDashboard(),
         fetchBatches(),
         fetchDestinations(),
         fetchScenarios(),
+        runSimulation('normal', true),
       ]);
 
       setMetrics(dashData);
       setBatches(batchData);
       setDestinations(destData);
       setScenarios(scData);
-
-      const optPlan = await runOptimizePlan({ scenario_key: 'normal', enable_discounts: true });
-      setCurrentPlan(optPlan);
-
-      const basePlan = await runBaselinePlan({ scenario_key: 'normal' });
-      setBaselinePlan(basePlan);
-
-      const simComp = await runSimulation('normal', true);
       setComparison(simComp);
+      setCurrentPlan(simComp.optimized_plan);
+      setBaselinePlan(simComp.baseline_plan);
     } catch (err: any) {
       console.error(err);
       showToast('Could not reach backend API. Ensure FastAPI server is running on port 8000.', 'error');
@@ -355,6 +334,41 @@ export function App() {
     showToast(`Destination ${data.name} added successfully!`);
   };
 
+  const handleUpdateDestination = async (id: number, data: any) => {
+    await updateDestination(id, data);
+    const updated = await fetchDestinations();
+    setDestinations(updated);
+    showToast(`Destination updated successfully!`);
+  };
+
+  const handleDeleteDestination = async (id: number) => {
+    await deleteDestination(id);
+    const updated = await fetchDestinations();
+    setDestinations(updated);
+    showToast(`Destination deleted successfully.`);
+  };
+
+  const handleAddDemand = async (destId: number, data: any) => {
+    await createDemand(destId, data);
+    const updated = await fetchDestinations();
+    setDestinations(updated);
+    showToast(`Demand added successfully!`);
+  };
+
+  const handleUpdateDemand = async (demandId: number, data: any) => {
+    await updateDemand(demandId, data);
+    const updated = await fetchDestinations();
+    setDestinations(updated);
+    showToast(`Demand updated successfully!`);
+  };
+
+  const handleDeleteDemand = async (demandId: number) => {
+    await deleteDemand(demandId);
+    const updated = await fetchDestinations();
+    setDestinations(updated);
+    showToast(`Demand deleted successfully.`);
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden font-sans" data-theme={mode}>
       <Cursor />
@@ -393,19 +407,8 @@ export function App() {
         batchesCount={batches.length}
         atRiskCount={metrics?.batches_at_risk_count || 0}
       >
-        <div className="relative overflow-hidden">
-          {exitingTab && exitingTab !== displayedTab && (
-            <div
-              key={`exiting-${exitingTab}`}
-              aria-hidden="true"
-              className="page-exit absolute inset-0 z-0 overflow-hidden pointer-events-none"
-            >
-              {renderPage(exitingTab)}
-            </div>
-          )}
-          <div key={displayedTab} className="page-enter relative z-10">
-            {renderPage(displayedTab)}
-          </div>
+        <div key={activeTab} className="page-enter relative z-10">
+          {renderPage(activeTab)}
         </div>
       </AppShell>
     </div>

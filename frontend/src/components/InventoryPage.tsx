@@ -17,6 +17,21 @@ import {
 import type { Batch } from '../types';
 import { Overlay } from './Overlay';
 import { Tooltip } from './Tooltip';
+import { CustomSelect } from './CustomSelect';
+
+const COMMODITY_SELECT_OPTIONS = [
+  { value: 'Tomato', label: 'Tomato 🍅', badge: 'High Spoilage' },
+  { value: 'Mango', label: 'Mango 🥭', badge: 'Export Premium' },
+  { value: 'Spinach', label: 'Spinach 🥬', badge: 'Ultra Short' },
+  { value: 'Banana', label: 'Banana 🍌', badge: 'Ethylene Sens.' },
+  { value: 'Onion', label: 'Onion 🧅', badge: 'Moisture Sens.' },
+  { value: 'Potato', label: 'Potato 🥔', badge: 'Bulk Staple' },
+];
+
+const STORAGE_HUB_OPTIONS = [
+  { value: 'Nashik Agro Hub', label: 'Nashik Agro Hub (Central Maharashtra)' },
+  { value: 'Pune Cold Facility', label: 'Pune Cold Facility (Western Maharashtra)' },
+];
 
 interface InventoryPageProps {
   batches: Batch[];
@@ -314,23 +329,44 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
       </div>
 
       {/* Filters, Search & View Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-surface border border-border rounded-xl p-4 shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-surface border border-border/80 rounded-2xl p-4 shadow-xs">
         {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-text" />
-          <input
-            type="text"
-            placeholder="Search lot code, produce, or warehouse..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-elevated/60 border border-border rounded-lg text-primary-text placeholder:text-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
-          />
-        </div>
+        <form 
+          onSubmit={(e) => { e.preventDefault(); }}
+          className="flex items-center space-x-1.5 flex-1 max-w-md"
+        >
+          <div className="relative flex-1">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-text" />
+            <input
+              type="text"
+              placeholder="Search lot code, produce, or warehouse..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-8 pr-7 py-2 text-xs bg-elevated/60 border border-border rounded-xl text-primary-text placeholder:text-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="btn-press absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-text hover:text-primary-text rounded"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="btn-press flex items-center space-x-1 px-3 py-2 rounded-xl bg-elevated hover:bg-border/60 border border-border text-xs font-bold text-primary-text cursor-pointer transition-colors shrink-0"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>Search</span>
+          </button>
+        </form>
 
         {/* Commodity Filter Pills */}
         <div className="flex items-center space-x-1 overflow-x-auto pb-1 lg:pb-0">
           {commodities.map((comm) => (
-            <Tooltip key={comm} text={`Filter inventory for ${comm}`}>
+            <Tooltip key={comm} text={`Filter ${comm}`}>
               <button
                 onClick={() => setSelectedCommodity(comm)}
                 className={`btn-press px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
@@ -349,7 +385,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
         {/* Urgency Filter */}
         <div className="flex items-center space-x-1 shrink-0">
           {['All', 'Critical', 'Urgent', 'Fresh'].map((urgency) => (
-            <Tooltip key={urgency} text={`Filter by ${urgency} shelf-life category`}>
+            <Tooltip key={urgency} text={`${urgency} status`}>
               <button
                 onClick={() => setSelectedUrgency(urgency)}
                 className={`btn-press px-2 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
@@ -572,18 +608,11 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                 </div>
                 <div>
                   <label className="block font-semibold text-secondary-text mb-1">Commodity</label>
-                  <select
+                  <CustomSelect
                     value={formData.commodity}
-                    onChange={(e) => setFormData({ ...formData, commodity: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text focus:border-primary focus:outline-none"
-                  >
-                    <option value="Tomato">Tomato 🍅</option>
-                    <option value="Mango">Mango 🥭</option>
-                    <option value="Spinach">Spinach 🥬</option>
-                    <option value="Banana">Banana 🍌</option>
-                    <option value="Onion">Onion 🧅</option>
-                    <option value="Potato">Potato 🥔</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, commodity: val })}
+                    options={COMMODITY_SELECT_OPTIONS}
+                  />
                 </div>
               </div>
 
@@ -616,14 +645,11 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
 
               <div>
                 <label className="block font-semibold text-secondary-text mb-1">Storage Hub</label>
-                <select
+                <CustomSelect
                   value={formData.storage_location}
-                  onChange={(e) => setFormData({ ...formData, storage_location: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text focus:border-primary focus:outline-none"
-                >
-                  <option value="Nashik Agro Hub">Nashik Agro Hub (Central Maharashtra)</option>
-                  <option value="Pune Cold Facility">Pune Cold Facility (Western Maharashtra)</option>
-                </select>
+                  onChange={(val) => setFormData({ ...formData, storage_location: val })}
+                  options={STORAGE_HUB_OPTIONS}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">

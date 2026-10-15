@@ -206,12 +206,12 @@ export const AppShell: React.FC<AppShellProps> = ({
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               const descriptions: Record<string, string> = {
-                dashboard: 'High-level KPI health, urgent stock alerts & benchmark summary',
-                inventory: 'Manage produce batches, remaining shelf life & cold-storage hubs',
-                destinations: 'APMC mandis, cold-chain routes, freight tariffs & market demands',
-                planner: 'Deterministic FEFO allocation solver & automated markdown discounts',
-                analytics: 'Economic benchmarking, spoilage reduction & demand fulfillment',
-                simulator: 'Operational shock testing (heatwaves, roadblocks, price crashes)',
+                dashboard: 'KPI health & alerts',
+                inventory: 'Batches & hubs',
+                destinations: 'APMC mandis & demand',
+                planner: 'FEFO dispatch allocation',
+                analytics: 'Economic benchmarking',
+                simulator: 'Disruption shock tests',
               };
 
               return (
@@ -307,34 +307,67 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
 
           {/* Search + Action Buttons */}
+          {/* Search + Action Buttons */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Quick Filter Search */}
-            <div className="relative hidden md:block w-48 lg:w-64">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-text" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter produce or mandi..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-elevated/70 border border-border rounded-lg text-primary-text placeholder:text-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="btn-press absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-text hover:text-primary-text"
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!searchQuery.trim()) return;
+                const q = searchQuery.toLowerCase().trim();
+                if (['mumbai', 'pune', 'surat', 'ahmedabad', 'goa', 'blr', 'bengaluru', 'mandi', 'yard', 'dest', 'depot'].some(k => q.includes(k))) {
+                  setActiveTab('destinations');
+                } else if (['tomato', 'mango', 'spinach', 'banana', 'onion', 'potato', 'apple', 'grapes', 'batch', 'inventory', 'stock', 'kg', 'b-'].some(k => q.includes(k))) {
+                  setActiveTab('inventory');
+                } else if (q.includes('plan') || q.includes('fefo') || q.includes('discount')) {
+                  setActiveTab('planner');
+                } else if (q.includes('sim') || q.includes('scenario') || q.includes('disrupt') || q.includes('heat') || q.includes('strike')) {
+                  setActiveTab('simulator');
+                } else if (q.includes('report') || q.includes('pdf') || q.includes('analytics') || q.includes('kpi') || q.includes('audit')) {
+                  setActiveTab('analytics');
+                } else {
+                  setActiveTab('inventory');
+                }
+              }}
+              className="relative hidden md:flex items-center space-x-1.5"
+            >
+              <div className="relative w-48 lg:w-60">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-text" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search mandi, produce, plan..."
+                  className="w-full pl-8 pr-7 py-2 text-xs bg-elevated/70 border border-border rounded-xl text-primary-text placeholder:text-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
+                />
+                {searchQuery && (
+                  <button 
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="btn-press absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-text hover:text-primary-text rounded"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+              <Tooltip text="Search platform">
+                <button
+                  type="submit"
+                  className="btn-press flex items-center space-x-1 px-3 py-2 bg-elevated hover:bg-border/60 border border-border rounded-xl text-xs font-bold text-primary-text cursor-pointer transition-colors shrink-0"
                 >
-                  <X className="w-3 h-3" />
+                  <Search className="w-3.5 h-3.5" />
+                  <span className="hidden xl:inline">Search</span>
                 </button>
-              )}
-            </div>
+              </Tooltip>
+            </form>
 
             {/* Quick Optimize Action */}
-            <Tooltip text="Run the deterministic FEFO optimization engine against live PostgreSQL data">
+            <Tooltip text="Run FEFO Optimizer">
               <button
                 onClick={onQuickOptimize}
                 disabled={isOptimizing}
                 data-magnetic
-                className="btn-press flex items-center space-x-1.5 px-3 py-1.5 bg-primary text-white dark:text-neutral-950 hover:bg-primary-hover font-bold text-xs rounded-lg shadow-xs disabled:opacity-60 cursor-pointer"
+                className="btn-press flex items-center space-x-1.5 px-3 py-2 bg-primary text-white dark:text-neutral-950 hover:bg-primary-hover font-bold text-xs rounded-xl shadow-xs disabled:opacity-60 cursor-pointer"
               >
                 <Zap className={`w-3.5 h-3.5 text-accent dark:text-neutral-950 ${isOptimizing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">{isOptimizing ? 'Solving...' : 'Optimize Plan'}</span>
@@ -342,11 +375,11 @@ export const AppShell: React.FC<AppShellProps> = ({
             </Tooltip>
 
             {/* Seed Reset for Judging */}
-            <Tooltip text="Reset PostgreSQL tables to the default benchmark evaluation dataset">
+            <Tooltip text="Reset demo data">
               <button
                 onClick={onResetSeed}
                 disabled={isResetting}
-                className="btn-press flex items-center space-x-1.5 px-2.5 py-1.5 text-xs font-medium text-secondary-text hover:text-primary-text bg-elevated hover:bg-border/60 border border-border rounded-lg disabled:opacity-50 cursor-pointer"
+                className="btn-press flex items-center space-x-1.5 px-2.5 py-2 text-xs font-semibold text-secondary-text hover:text-primary-text bg-elevated hover:bg-border/60 border border-border rounded-xl disabled:opacity-50 cursor-pointer"
               >
                 <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
                 <span className="hidden md:inline">{isResetting ? 'Resetting...' : 'Reset Data'}</span>
@@ -354,7 +387,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             </Tooltip>
 
             {/* Theme Toggle */}
-            <Tooltip text="Toggle theme mode (Dark / Light)">
+            <Tooltip text="Toggle theme">
               <ThemeToggle />
             </Tooltip>
           </div>

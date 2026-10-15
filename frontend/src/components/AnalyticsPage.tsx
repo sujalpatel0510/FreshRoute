@@ -21,6 +21,7 @@ import {
 import type { DistributionPlan, EvaluationComparison } from '../types';
 import { useTheme } from './ThemeToggle';
 import { Tooltip as UiTooltip } from './Tooltip';
+import { exportAuditPDF } from '../utils/pdfExport';
 
 interface AnalyticsPageProps {
   comparison: EvaluationComparison | null;
@@ -100,26 +101,12 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
     }
   ];
 
-  const handleExportJSON = () => {
-    const reportData = {
-      timestamp: new Date().toISOString(),
-      scenario: comparison?.scenario_name || 'Normal Operation',
-      metrics: {
-        spoilage_reduction_percent: comparison?.spoilage_reduction_percent,
-        spoilage_prevented_kg: comparison?.spoilage_quantity_prevented_kg,
-        net_revenue_lift: comparison?.net_revenue_lift,
-        net_revenue_lift_percent: comparison?.net_revenue_lift_percent,
-      },
-      freshroute_plan: freshroute,
-      baseline_plan: baseline,
-    };
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `FreshRoute_Benchmark_Report_${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportPDF = () => {
+    exportAuditPDF({
+      comparison,
+      currentPlan,
+      baselinePlan,
+    });
   };
 
   return (
@@ -155,13 +142,13 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
                 <span>{loading ? 'Simulating...' : 'Re-Run Benchmark'}</span>
               </button>
             </UiTooltip>
-            <UiTooltip text="Download comprehensive allocation audit and comparison metrics as JSON">
+            <UiTooltip text="Download official PDF audit report with company credentials, letterhead, economics and dispatch data">
               <button
-                onClick={handleExportJSON}
-                className="btn-press flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-border bg-elevated hover:bg-border/60 text-primary-text text-xs font-semibold shadow-xs cursor-pointer shrink-0"
+                onClick={handleExportPDF}
+                className="btn-press flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold shadow-xs cursor-pointer shrink-0 transition-colors"
               >
-                <Download className="w-3.5 h-3.5 text-muted-text" />
-                <span>Export Audit JSON</span>
+                <Download className="w-4 h-4 text-primary" />
+                <span>Export Audit PDF</span>
               </button>
             </UiTooltip>
           </div>

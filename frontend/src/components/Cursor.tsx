@@ -22,6 +22,14 @@ function classify(target: EventTarget | null): Classification {
   const el = target instanceof Element ? target : null;
   if (!el) return { state: "default", label: "", magnetic: null };
 
+  const tag = el.tagName;
+  if (tag === "BUTTON" || tag === "A" || tag === "SELECT" || tag === "SUMMARY") {
+    return { state: "link", label: "", magnetic: null };
+  }
+  if (tag === "INPUT" || tag === "TEXTAREA") {
+    return { state: "text", label: "", magnetic: null };
+  }
+
   const magnetic = el.closest("[data-magnetic]") as HTMLElement | null;
 
   if (el.closest(DISABLED_SELECTOR)) {
@@ -108,9 +116,6 @@ export const Cursor: React.FC = () => {
     let magTargetX = 0;
     let magTargetY = 0;
 
-    let glowEl: HTMLElement | null = null;
-    let glowRect: DOMRect | null = null;
-
     const labelSpan = label.firstElementChild as HTMLElement;
 
     const setState = (next: CursorState, label: string) => {
@@ -176,7 +181,6 @@ export const Cursor: React.FC = () => {
     // mousemove never forces synchronous layout except once per scroll.
     const invalidateRects = () => {
       magRect = null;
-      glowRect = null;
     };
 
     const onMove = (e: MouseEvent) => {
@@ -196,16 +200,6 @@ export const Cursor: React.FC = () => {
         const result = classify(e.target);
         applyMagnetic(result.state === "hidden" ? null : result.magnetic);
         setState(result.state, result.label);
-
-        const el = e.target instanceof Element ? e.target : null;
-        glowEl = el ? (el.closest("[data-pointer-glow]") as HTMLElement | null) : null;
-        glowRect = glowEl ? glowEl.getBoundingClientRect() : null;
-      }
-
-      if (glowEl) {
-        if (!glowRect) glowRect = glowEl.getBoundingClientRect();
-        glowEl.style.setProperty("--px", `${(e.clientX - glowRect.left).toFixed(1)}px`);
-        glowEl.style.setProperty("--py", `${(e.clientY - glowRect.top).toFixed(1)}px`);
       }
 
       if (!visible && state !== "hidden") {
