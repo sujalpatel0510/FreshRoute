@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, ReactNode, useContext } from 'react';
+import React, { useState, useEffect, useRef, createContext, type ReactNode, useContext } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -25,10 +25,23 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return prefersDark ? 'dark' : 'light';
   });
 
-  // Persist to localStorage when user explicitly changes (outside of effect)
+  const themeAnimTimer = useRef<number | undefined>(undefined);
+
+  // Must run synchronously inside the click handler — BEFORE React commits
+  // the new data-theme attribute — otherwise the transition class lands
+  // after the colors have already snapped and the cross-fade never plays.
+  const beginThemeTransition = () => {
+    const html = document.documentElement;
+    html.classList.add('theme-animating');
+    window.clearTimeout(themeAnimTimer.current);
+    themeAnimTimer.current = window.setTimeout(() => html.classList.remove('theme-animating'), 360);
+  };
+
+  // Apply theme attribute + persistence
   useEffect(() => {
     const html = document.documentElement;
     if (mode === 'system') {
+      // Empty attribute = follow OS preference via the CSS media fallback
       html.dataset.theme = '';
     } else {
       html.dataset.theme = mode;
@@ -36,11 +49,15 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('freshroute-theme', mode);
   }, [mode]);
 
+  useEffect(() => () => window.clearTimeout(themeAnimTimer.current), []);
+
   const setModeHandler = (newMode: ThemeMode) => {
+    beginThemeTransition();
     setMode(newMode);
   };
 
   const toggle = () => {
+    beginThemeTransition();
     setMode(prev => {
       if (prev === 'system') return 'dark';
       if (prev === 'dark') return 'light';
@@ -64,14 +81,16 @@ export const ThemeToggle: React.FC = () => {
     <button
       onClick={toggled}
       aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} theme`}
-      className="rounded-md p-2 transition-colors duration-200 focus-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="btn-press rounded-md p-2 focus-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       title={`Theme toggle, currently ${mode}`}
     >
-      {mode === 'dark' ? (
-        <Sun className="w-4 h-4 text-primary" />
-      ) : (
-        <Moon className="w-4 h-4 text-primary" />
-      )}
+      <span key={mode} className="theme-icon-in inline-flex">
+        {mode === 'dark' ? (
+          <Sun className="w-4 h-4 text-primary" />
+        ) : (
+          <Moon className="w-4 h-4 text-primary" />
+        )}
+      </span>
     </button>
   );
 };

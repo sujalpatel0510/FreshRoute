@@ -3,10 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>FreshRoute — Intelligent Perishable Produce Distribution</title>
+    <meta name="description" content="AI-assisted agricultural supply chain planning, perishable inventory optimization, and baseline loss comparison." />
+    <!-- Apply the stored theme before first paint so dark-mode users
+         never see a light flash. Absent attribute = follow the OS. -->
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('freshroute-theme');
+          if (m === 'light' || m === 'dark') {
+            document.documentElement.setAttribute('data-theme', m);
+          }
+        } catch (e) { /* storage unavailable — fall back to OS preference */ }
+      })();
+    </script>
+    <!-- Fonts: Inter & JetBrains Mono for tabular metrics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
-  <body>
+  <body class="bg-background text-primary-text antialiased selection:bg-primary/20 selection:text-primary">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

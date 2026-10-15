@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
   ArrowUpRight, 
   ShieldCheck, 
   Download, 
-  Clock 
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -35,6 +36,16 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   loading,
   onRunComparison,
 }) => {
+  // Respect prefers-reduced-motion for Recharts' JS-driven animations
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   const { mode } = useTheme();
   const isDark = mode === 'dark';
   const freshroute = comparison?.optimized_plan || currentPlan;
@@ -43,7 +54,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   // Spoilage comparison data for Recharts
   const spoilageChartData = [
     {
-      name: 'Spoiled Produce (kg)',
+      name: 'Spoiled Stock (kg)',
       Baseline: baseline ? baseline.spoiled_quantity : 1110,
       FreshRoute: freshroute ? freshroute.spoiled_quantity : 430,
     },
@@ -62,27 +73,27 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   // Financial metrics comparison data
   const financialChartData = [
     {
-      metric: 'Gross Revenue',
+      metric: 'Gross Sales',
       Baseline: baseline ? baseline.gross_revenue : 1300000,
       FreshRoute: freshroute ? freshroute.gross_revenue : 1300000,
     },
     {
-      metric: 'Transport Tariffs',
+      metric: 'Transport',
       Baseline: baseline ? baseline.transport_cost : 45000,
       FreshRoute: freshroute ? freshroute.transport_cost : 42000,
     },
     {
-      metric: 'Handling Costs',
+      metric: 'Handling',
       Baseline: baseline ? baseline.handling_cost : 20000,
       FreshRoute: freshroute ? freshroute.handling_cost : 20000,
     },
     {
-      metric: 'Spoilage Write-Off',
+      metric: 'Spoilage Cost',
       Baseline: baseline ? baseline.spoilage_cost : 16650,
       FreshRoute: freshroute ? freshroute.spoilage_cost : 6450,
     },
     {
-      metric: 'Net Realization',
+      metric: 'Net Revenue',
       Baseline: baseline ? baseline.net_revenue : 1218350,
       FreshRoute: freshroute ? freshroute.net_revenue : 1231550,
     }
@@ -113,19 +124,22 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs transition-colors">
+      <div className="bg-surface rounded-2xl border border-border p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
+              <span className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                 <BarChart3 className="w-5 h-5" />
               </span>
-              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                Baseline vs. FreshRoute Comparative Evaluation
+              <h2 className="text-xl font-bold tracking-tight text-primary-text">
+                Comparative Economic Evaluation & Analytics
               </h2>
+              <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                FR-06 Benchmark
+              </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Empirical benchmarking using identical starting inventory, destination demands, and economic cost structures (FR-06).
+            <p className="text-xs text-secondary-text mt-1">
+              Rigorous side-by-side comparison between FIFO Baseline and FreshRoute FEFO Engine under identical starting parameters.
             </p>
           </div>
 
@@ -133,18 +147,18 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
             <button
               onClick={onRunComparison}
               disabled={loading}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition-all disabled:opacity-50"
+              className="btn-press flex items-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
             >
-              <TrendingUp className="w-4 h-4" />
-              <span>{loading ? 'Running Benchmark...' : 'Refresh Benchmark'}</span>
+              <TrendingUp className="w-4 h-4 text-accent" />
+              <span>{loading ? 'Simulating...' : 'Re-Run Benchmark'}</span>
             </button>
             <button
               onClick={handleExportJSON}
-              className="flex items-center space-x-1.5 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-xs transition-all"
-              title="Download full benchmark audit report as JSON"
+              className="btn-press flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-border bg-elevated hover:bg-border/60 text-primary-text text-xs font-semibold shadow-xs cursor-pointer shrink-0"
+              title="Download audit benchmark as JSON"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Report</span>
+              <Download className="w-3.5 h-3.5 text-muted-text" />
+              <span>Export Audit JSON</span>
             </button>
           </div>
         </div>
@@ -153,33 +167,33 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       {/* Key Benchmark Delta Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Spoilage Reduction */}
-        <div className="bg-gradient-to-br from-emerald-500 to-green-600 text-white p-5 rounded-2xl shadow-md">
-          <span className="text-xs font-semibold text-emerald-100 flex items-center justify-between">
+        <div className="bg-gradient-to-br from-primary to-primary-hover text-white p-5 rounded-2xl shadow-xs">
+          <span className="text-xs font-semibold text-accent flex items-center justify-between">
             <span>Spoilage Reduction vs Baseline</span>
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4 text-white" />
           </span>
-          <div className="text-3xl font-extrabold tracking-tight mt-2">
+          <div className="text-3xl font-extrabold tracking-tight font-mono mt-2">
             {comparison?.spoilage_reduction_percent != null
               ? `${comparison.spoilage_reduction_percent.toFixed(1)}%`
               : '100%'}
           </div>
-          <p className="text-[11px] text-emerald-100 mt-1">
+          <p className="text-[11px] text-white/90 mt-1">
             {comparison?.spoilage_quantity_prevented_kg
-              ? `${comparison.spoilage_quantity_prevented_kg.toLocaleString()} kg food loss prevented`
-              : 'FEFO prioritized routing eliminates transit spoilage'}
+              ? `${comparison.spoilage_quantity_prevented_kg.toLocaleString()} kg loss eliminated`
+              : 'FEFO routing prevents premature transit spoilage'}
           </p>
         </div>
 
         {/* Net Revenue Lift */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs">
+          <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
             <span>Net Revenue Lift</span>
-            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <TrendingUp className="w-4 h-4 text-primary" />
           </span>
-          <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-2">
+          <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
             +₹{(comparison?.net_revenue_lift || (freshroute?.net_revenue || 0) - (baseline?.net_revenue || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </div>
-          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center space-x-1">
+          <p className="text-[11px] text-primary font-semibold mt-1 flex items-center space-x-1">
             <ArrowUpRight className="w-3 h-3" />
             <span>
               {comparison?.net_revenue_lift_percent
@@ -190,103 +204,104 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
         </div>
 
         {/* Infeasible Prevented */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>Infeasible Dispatches Prevented</span>
-            <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs">
+          <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
+            <span>Infeasible Dispatches Blocked</span>
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
           </span>
-          <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-2">
+          <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
             {freshroute?.infeasible_prevented || 10}
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Shelf-life & transit gate constraint guards
+          <p className="text-[11px] text-muted-text mt-1">
+            Transit duration & gate capacity guards
           </p>
         </div>
 
         {/* Solving Speed */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs">
+          <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
             <span>Engine Solving Speed</span>
-            <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <Clock className="w-4 h-4 text-primary" />
           </span>
-          <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-2">
+          <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
             {freshroute?.execution_time_ms.toFixed(2) || '1.20'} ms
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Target &lt; 2000 ms (Passed with 99.9% headroom)
+          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center space-x-1">
+            <Sparkles className="w-3 h-3" />
+            <span>Target &lt; 2000 ms (Met with 99.9% headroom)</span>
           </p>
         </div>
       </div>
 
       {/* Side-by-Side Detailed Metrics Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-colors">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-            Exact Mathematical Performance Comparison (PRD Section 11)
+      <div className="bg-surface rounded-2xl border border-border shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-bold text-primary-text text-sm">
+            Mathematical Performance Matrix (PRD Section 11)
           </h3>
-          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <span className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-elevated text-secondary-text border border-border">
             Scenario: {comparison?.scenario_name || 'Normal Operation'}
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+            <thead className="bg-elevated/70 border-b border-border text-secondary-text uppercase tracking-wider font-semibold">
               <tr>
-                <th className="py-3 px-4">Performance Metric</th>
+                <th className="py-3 px-4">Performance Indicator</th>
                 <th className="py-3 px-4 text-right">Baseline Strategy (FIFO)</th>
                 <th className="py-3 px-4 text-right">FreshRoute Engine (FEFO)</th>
-                <th className="py-3 px-4 text-right">Net Advantage / Lift</th>
+                <th className="py-3 px-4 text-right">Net Optimization Lift</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
-              <tr>
-                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">Delivered Stock (kg)</td>
-                <td className="py-3 px-4 text-right">{baseline?.fulfilled_demand.toLocaleString() || '15,000'} kg</td>
-                <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-slate-100">{freshroute?.fulfilled_demand.toLocaleString() || '15,000'} kg</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 font-bold">Optimal intake match</td>
+            <tbody className="divide-y divide-border/40 font-medium text-primary-text font-mono tabular-nums">
+              <tr key={`delivered-${baseline?.fulfilled_demand}-${freshroute?.fulfilled_demand}`} className="row-enter">
+                <td className="py-3 px-4 font-sans font-semibold text-primary-text">Delivered Stock (kg)</td>
+                <td className="py-3 px-4 text-right text-secondary-text">{baseline?.fulfilled_demand.toLocaleString() || '15,000'} kg</td>
+                <td className="py-3 px-4 text-right font-bold text-primary-text">{freshroute?.fulfilled_demand.toLocaleString() || '15,000'} kg</td>
+                <td className="py-3 px-4 text-right text-primary font-semibold font-sans">Matched to demand</td>
               </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">Demand Fulfillment Rate (%)</td>
-                <td className="py-3 px-4 text-right">{baseline?.fulfillment_rate.toFixed(1) || '66.4'}%</td>
-                <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-slate-100">{freshroute?.fulfillment_rate.toFixed(1) || '66.4'}%</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 font-semibold">Capacity maximized</td>
+              <tr key={`fulfillment-${baseline?.fulfillment_rate}-${freshroute?.fulfillment_rate}`} className="row-enter">
+                <td className="py-3 px-4 font-sans font-semibold text-primary-text">Demand Fulfillment Rate (%)</td>
+                <td className="py-3 px-4 text-right text-secondary-text">{baseline?.fulfillment_rate.toFixed(1) || '66.4'}%</td>
+                <td className="py-3 px-4 text-right font-bold text-primary-text">{freshroute?.fulfillment_rate.toFixed(1) || '66.4'}%</td>
+                <td className="py-3 px-4 text-right text-primary font-semibold font-sans">Gate throughput maximized</td>
               </tr>
-              <tr className="bg-emerald-50/30 dark:bg-emerald-950/20">
-                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">Spoiled Inventory Quantity (kg)</td>
-                <td className="py-3 px-4 text-right text-rose-600 dark:text-rose-400 font-bold">{baseline?.spoiled_quantity.toLocaleString() || '0'} kg</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 font-bold">{freshroute?.spoiled_quantity.toLocaleString() || '0'} kg</td>
-                <td className="py-3 px-4 text-right font-bold text-emerald-700 dark:text-emerald-400">
+              <tr key={`spoiled-${baseline?.spoiled_quantity}-${freshroute?.spoiled_quantity}`} className="row-enter bg-primary/5">
+                <td className="py-3 px-4 font-sans font-semibold text-primary-text">Spoiled Produce (kg)</td>
+                <td className="py-3 px-4 text-right text-amber-500 font-bold">{baseline?.spoiled_quantity.toLocaleString() || '0'} kg</td>
+                <td className="py-3 px-4 text-right text-primary font-bold">{freshroute?.spoiled_quantity.toLocaleString() || '0'} kg</td>
+                <td className="py-3 px-4 text-right font-bold text-primary font-sans">
                   {baseline && freshroute && (baseline.spoiled_quantity - freshroute.spoiled_quantity > 0)
-                    ? `-${(baseline.spoiled_quantity - freshroute.spoiled_quantity).toLocaleString()} kg spoilage prevented`
-                    : '0 kg waste'}
+                    ? `-${(baseline.spoiled_quantity - freshroute.spoiled_quantity).toLocaleString()} kg eliminated`
+                    : 'Zero transit waste'}
                 </td>
               </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">Spoilage Rate (%)</td>
-                <td className="py-3 px-4 text-right text-rose-600 dark:text-rose-400">{baseline?.spoilage_rate.toFixed(1) || '0.0'}%</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 font-bold">{freshroute?.spoilage_rate.toFixed(1) || '0.0'}%</td>
-                <td className="py-3 px-4 text-right font-semibold text-emerald-700 dark:text-emerald-400">
-                  {comparison?.spoilage_reduction_percent != null ? `${comparison.spoilage_reduction_percent.toFixed(1)}% reduction` : '0%'}
+              <tr key={`spoilage-ratio-${baseline?.spoilage_rate}-${freshroute?.spoilage_rate}`} className="row-enter">
+                <td className="py-3 px-4 font-sans font-semibold text-primary-text">Spoilage Ratio (%)</td>
+                <td className="py-3 px-4 text-right text-amber-500">{baseline?.spoilage_rate.toFixed(1) || '0.0'}%</td>
+                <td className="py-3 px-4 text-right text-primary font-bold">{freshroute?.spoilage_rate.toFixed(1) || '0.0'}%</td>
+                <td className="py-3 px-4 text-right font-semibold text-primary font-sans">
+                  {comparison?.spoilage_reduction_percent != null ? `${comparison.spoilage_reduction_percent.toFixed(1)}% reduction` : '100%'}
                 </td>
               </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">Gross Sales Realization (₹)</td>
-                <td className="py-3 px-4 text-right">₹{baseline?.gross_revenue.toLocaleString('en-IN') || '1,324,500'}</td>
-                <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-slate-100">₹{freshroute?.gross_revenue.toLocaleString('en-IN') || '1,334,340'}</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 font-semibold">+₹{((freshroute?.gross_revenue || 0) - (baseline?.gross_revenue || 0)).toLocaleString('en-IN')}</td>
+              <tr key={`gross-${baseline?.gross_revenue}-${freshroute?.gross_revenue}`} className="row-enter">
+                <td className="py-3 px-4 font-sans font-semibold text-primary-text">Gross Sales Revenue (₹)</td>
+                <td className="py-3 px-4 text-right text-secondary-text">₹{baseline?.gross_revenue.toLocaleString('en-IN') || '1,324,500'}</td>
+                <td className="py-3 px-4 text-right font-bold text-primary-text">₹{freshroute?.gross_revenue.toLocaleString('en-IN') || '1,334,340'}</td>
+                <td className="py-3 px-4 text-right text-primary font-sans">+₹{((freshroute?.gross_revenue || 0) - (baseline?.gross_revenue || 0)).toLocaleString('en-IN')}</td>
               </tr>
-              <tr>
-                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">Transport Logistics Tariffs (₹)</td>
-                <td className="py-3 px-4 text-right">₹{baseline?.transport_cost.toLocaleString('en-IN') || '45,200'}</td>
-                <td className="py-3 px-4 text-right">₹{freshroute?.transport_cost.toLocaleString('en-IN') || '43,900'}</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 font-semibold">-₹{((baseline?.transport_cost || 0) - (freshroute?.transport_cost || 0)).toLocaleString('en-IN')} optimized</td>
+              <tr key={`transport-${baseline?.transport_cost}-${freshroute?.transport_cost}`} className="row-enter">
+                <td className="py-3 px-4 font-sans font-semibold text-primary-text">Transport Tariffs (₹)</td>
+                <td className="py-3 px-4 text-right text-secondary-text">₹{baseline?.transport_cost.toLocaleString('en-IN') || '45,200'}</td>
+                <td className="py-3 px-4 text-right text-primary-text">₹{freshroute?.transport_cost.toLocaleString('en-IN') || '43,900'}</td>
+                <td className="py-3 px-4 text-right text-primary font-sans">-₹{((baseline?.transport_cost || 0) - (freshroute?.transport_cost || 0)).toLocaleString('en-IN')} optimized</td>
               </tr>
-              <tr className="bg-slate-50 dark:bg-slate-800/80 font-bold text-slate-900 dark:text-slate-100">
-                <td className="py-3 px-4">Net Economic Revenue (₹)</td>
+              <tr key={`net-${baseline?.net_revenue}-${freshroute?.net_revenue}`} className="row-enter bg-elevated/70 font-bold text-primary-text">
+                <td className="py-3 px-4 font-sans">Net Economic Revenue (₹)</td>
                 <td className="py-3 px-4 text-right">₹{baseline?.net_revenue.toLocaleString('en-IN') || '1,258,000'}</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 text-sm">₹{freshroute?.net_revenue.toLocaleString('en-IN') || '1,267,840'}</td>
-                <td className="py-3 px-4 text-right text-emerald-700 dark:text-emerald-400 text-sm">+₹{((freshroute?.net_revenue || 0) - (baseline?.net_revenue || 0)).toLocaleString('en-IN')} Profit Lift</td>
+                <td className="py-3 px-4 text-right text-primary text-sm">₹{freshroute?.net_revenue.toLocaleString('en-IN') || '1,267,840'}</td>
+                <td className="py-3 px-4 text-right text-primary text-sm font-sans">+₹{((freshroute?.net_revenue || 0) - (baseline?.net_revenue || 0)).toLocaleString('en-IN')} Profit Lift</td>
               </tr>
             </tbody>
           </table>
@@ -296,60 +311,60 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       {/* Visual Analytics Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Financial Breakdown Comparison */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3 transition-colors">
+        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs space-y-3" data-cursor-label="Explore">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Financial Structure Breakdown</h3>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Values in ₹ INR</span>
+            <h3 className="font-bold text-primary-text text-sm">Financial Realization Comparison</h3>
+            <span className="text-[11px] text-muted-text font-mono">Values in ₹ INR</span>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={financialChartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
-                <XAxis dataKey="metric" tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }} />
-                <YAxis tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#2C3930' : '#E1E8E1'} />
+                <XAxis dataKey="metric" tick={{ fontSize: 10, fill: isDark ? '#A0B0A5' : '#66736A' }} />
+                <YAxis tick={{ fontSize: 10, fill: isDark ? '#A0B0A5' : '#66736A' }} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
                 <Tooltip 
                   formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, '']}
                   contentStyle={{ 
                     fontSize: '11px', 
                     borderRadius: '8px',
-                    backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
-                    color: isDark ? '#f8fafc' : '#0f172a'
+                    backgroundColor: isDark ? '#171F1A' : '#ffffff',
+                    borderColor: isDark ? '#2C3930' : '#E1E8E1',
+                    color: isDark ? '#EDF5EE' : '#17211B'
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
-                <Bar dataKey="Baseline" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="FreshRoute" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Baseline" fill={isDark ? '#4B5563' : '#94A3B8'} radius={[4, 4, 0, 0]} animationDuration={700} animationEasing="ease-out" isAnimationActive={!reduceMotion} />
+                <Bar dataKey="FreshRoute" fill={isDark ? '#65D99A' : '#176B45'} radius={[4, 4, 0, 0]} animationDuration={700} animationEasing="ease-out" isAnimationActive={!reduceMotion} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Chart 2: Operational Volume Comparison */}
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3 transition-colors">
+        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs space-y-3" data-cursor-label="Explore">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Volume & Spoilage Allocation</h3>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Quantities in kg</span>
+            <h3 className="font-bold text-primary-text text-sm">Volume & Spoilage Allocation</h3>
+            <span className="text-[11px] text-muted-text font-mono">Quantities in kg</span>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={spoilageChartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }} />
-                <YAxis tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b' }} tickFormatter={(val) => `${(val / 1000).toFixed(1)}t`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#2C3930' : '#E1E8E1'} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: isDark ? '#A0B0A5' : '#66736A' }} />
+                <YAxis tick={{ fontSize: 10, fill: isDark ? '#A0B0A5' : '#66736A' }} tickFormatter={(val) => `${(val / 1000).toFixed(1)}t`} />
                 <Tooltip 
                   formatter={(val: any) => [`${Number(val).toLocaleString()} kg`, '']}
                   contentStyle={{ 
                     fontSize: '11px', 
                     borderRadius: '8px',
-                    backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
-                    color: isDark ? '#f8fafc' : '#0f172a'
+                    backgroundColor: isDark ? '#171F1A' : '#ffffff',
+                    borderColor: isDark ? '#2C3930' : '#E1E8E1',
+                    color: isDark ? '#EDF5EE' : '#17211B'
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
-                <Bar dataKey="Baseline" fill="#64748b" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="FreshRoute" fill="#059669" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Baseline" fill={isDark ? '#6B7280' : '#94A3B8'} radius={[4, 4, 0, 0]} animationDuration={700} animationEasing="ease-out" isAnimationActive={!reduceMotion} />
+                <Bar dataKey="FreshRoute" fill={isDark ? '#34D399' : '#10B981'} radius={[4, 4, 0, 0]} animationDuration={700} animationEasing="ease-out" isAnimationActive={!reduceMotion} />
               </BarChart>
             </ResponsiveContainer>
           </div>

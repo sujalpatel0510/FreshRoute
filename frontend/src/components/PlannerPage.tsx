@@ -10,7 +10,6 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import type { DistributionPlan, Scenario } from '../types';
-import { useTheme } from '../components/ThemeToggle';
 
 interface PlannerPageProps {
   plan: DistributionPlan | null;
@@ -30,8 +29,6 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
   onOptimize,
   loading,
 }) => {
-  const { mode } = useTheme();
-  const isDark = mode === 'dark';
   const [strategy, setStrategy] = useState<'freshroute' | 'baseline'>('freshroute');
   const [selectedScenario, setSelectedScenario] = useState<string>('normal');
   const [enableDiscounts, setEnableDiscounts] = useState<boolean>(true);
@@ -51,54 +48,53 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
     setExpandedRow(expandedRow === id ? null : id);
   };
 
-  const strategyBg = isDark ? 'var(--primary)/20' : 'var(--primary)/10';
-  const strategyBorder = isDark ? 'var(--primary)/30' : 'var(--primary)/30';
-  const strategyText = isDark ? 'var(--primary)' : 'var(--primary)';
-
   return (
     <div className="space-y-6">
       {/* Configuration Header Card */}
-      <div className="bg-surface rounded-2xl border border-border p-5 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/30">
-          <div>
+      <div className="bg-surface rounded-2xl p-5 sm:p-6 border border-border shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+          <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <span className={`p-1.5 rounded-lg ${strategyBg} border ${strategyBorder} text-${strategyText.split('/')[0]}`}>
+              <span className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20">
                 <Route className="w-5 h-5" />
               </span>
-              <h2 className="text-xl font-bold tracking-tight text-body dark:text-[color:var(--primary-text)]">Intelligent Dispatch Planner</h2>
+              <h2 className="text-xl font-bold tracking-tight text-primary-text">Intelligent Dispatch Planner</h2>
+              <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                FR-04 Engine
+              </span>
             </div>
-            <p className="text-xs text-var(--muted-text) mt-1">
-              Configure parameters to calculate feasible, capacity-constrained stock allocations with transparent explainability.
+            <p className="text-xs text-secondary-text">
+              Deterministic FEFO allocation engine evaluating remaining shelf-life, road transit duration, destination gate limits, and transparent margin explainability.
             </p>
           </div>
 
           <button
             onClick={handleRun}
             disabled={loading}
-            className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all hover:scale-[1.02] disabled:opacity-50 ${
+            className={`btn-press flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0 ${
               strategy === 'freshroute'
-                ? 'bg-primary hover-primary/90 text-white shadow-primary/20'
-                : 'bg-surface/50 hover:bg-surface/80 text-var(--muted-text)'`
+                ? 'bg-primary hover:bg-primary-hover text-white'
+                : 'bg-elevated hover:bg-border/60 text-primary-text border border-border'
             }`}
           >
-            <Zap className="w-4 h-4 " + (loading ? "animate-spin" : "")} />
-            {loading ? 'Solving Engine...' : strategy === 'freshroute' ? 'Optimize FreshRoute Plan' : 'Generate Baseline Plan'}
+            <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : 'text-accent'}`} />
+            <span>{loading ? 'Solving Engine...' : strategy === 'freshroute' ? 'Execute FreshRoute Optimizer' : 'Compute Baseline (FIFO)'}</span>
           </button>
         </div>
 
         {/* Control Parameters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           {/* Strategy Selector */}
           <div>
-            <label className="block font-semibold text-var(--muted-text) mb-1">Planning Strategy</label>
-            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-lg border border-border/30">
+            <label className="block font-semibold text-secondary-text mb-1">Planning Algorithm</label>
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-elevated rounded-lg border border-border">
               <button
                 type="button"
                 onClick={() => setStrategy('freshroute')}
-                className="py-1.5 text-center font-bold rounded-md transition-all " + (
+                className={`btn-press py-1.5 text-center font-bold rounded-md text-xs transition-all cursor-pointer ${
                   strategy === 'freshroute'
-                    ? 'bg-primary/20 text-primary border var(--primary)/30'
-                    : 'text-var(--muted-text) hover:text-var(--primary)'
+                    ? 'bg-surface text-primary shadow-xs font-bold border border-primary/20'
+                    : 'text-secondary-text hover:text-primary-text'
                 }`}
               >
                 FreshRoute (FEFO)
@@ -106,9 +102,10 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
               <button
                 type="button"
                 onClick={() => setStrategy('baseline')}
-                className="py-1.5 text-center font-bold rounded-md transition-all " + (strategy === "baseline" ? "bg-primary" : "text")
-                    ? 'bg-white text-var(--primary-500) shadow-xs'
-                    : 'text-var(--muted-text) hover:text-var(--primary)'
+                className={`btn-press py-1.5 text-center font-medium rounded-md text-xs transition-all cursor-pointer ${
+                  strategy === 'baseline'
+                    ? 'bg-surface text-primary-text shadow-xs font-bold border border-border'
+                    : 'text-secondary-text hover:text-primary-text'
                 }`}
               >
                 Baseline (FIFO)
@@ -118,11 +115,11 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
           {/* Scenario Selector */}
           <div>
-            <label className="block font-semibold text-var(--muted-text) mb-1">Operational Scenario</label>
+            <label className="block font-semibold text-secondary-text mb-1">Benchmark Scenario</label>
             <select
               value={selectedScenario}
               onChange={(e) => setSelectedScenario(e.target.value)}
-              className="w-full px-3 py-2 rounded-full border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+              className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text font-medium focus:border-primary focus:outline-none"
             >
               {scenarios.map((sc) => (
                 <option key={sc.key} value={sc.key}>
@@ -134,39 +131,41 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
           {/* Shelf Life Buffer */}
           <div>
-            <label className="block font-semibold text-var(--muted-text) mb-1">
-              Min Arrival Buffer: <span className="font-bold text-primary">{bufferHours} Hours</span>
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="12"
-              step="0.5"
-              value={bufferHours}
-              onChange={(e) => setBufferHours(parseFloat(e.target.value))}
-              className="w-full mt-2 cursor-pointer"
-            />
+            <div className="flex justify-between font-semibold text-secondary-text mb-1">
+              <span>Arrival Safety Margin</span>
+              <span className="font-mono font-bold text-primary">{bufferHours} Hours</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="range"
+                min="1"
+                max="12"
+                step="0.5"
+                value={bufferHours}
+                onChange={(e) => setBufferHours(parseFloat(e.target.value))}
+                className="w-full accent-primary cursor-pointer"
+              />
+              <span className="text-[10px] text-muted-text font-mono">12h</span>
+            </div>
           </div>
 
           {/* Discount Policy Toggle */}
           <div>
-            <label className="block font-semibold text-var(--muted-text) mb-1">Clearance Discounting</label>
-            <button
-              type="button"
-              onClick={() => setEnableDiscounts(!enableDiscounts)}
-              className={`w-full py-2 px-3 rounded-full border flex items-center justify-between font-semibold transition-all ${
+            <label className="block font-semibold text-secondary-text mb-1">Markdown Clearance Engine</label>
+              <button
+                type="button"
+                onClick={() => setEnableDiscounts(!enableDiscounts)}
+                className={`btn-press w-full py-2 px-3 rounded-lg border flex items-center justify-between font-semibold text-xs transition-all cursor-pointer ${
                 enableDiscounts
                   ? 'bg-primary/10 border-primary/30 text-primary'
-                  : 'bg-surface/50 border-border/30 text-var(--muted-text)'
+                  : 'bg-elevated border-border text-secondary-text'
               }`}
             >
               <span className="flex items-center space-x-1.5">
                 <Tag className="w-3.5 h-3.5" />
-                <span>{enableDiscounts ? 'Discounts Enabled' : 'Discounts Disabled'}</span>
+                <span>{enableDiscounts ? 'Discounts Active (FR-05)' : 'No Discounts'}</span>
               </span>
-              <span className={`w-2 h-2 rounded-full ${
-                enableDiscounts ? 'bg-primary-500' : 'var(--surface)/30'
-              }`}></span>
+              <span className={`w-2 h-2 rounded-full ${enableDiscounts ? 'bg-primary animate-pulse' : 'bg-muted-text'}`} />
             </button>
           </div>
         </div>
@@ -174,124 +173,127 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
       {/* Plan Performance Summary Strip */}
       {plan && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div className="bg-surface/50 rounded-xl border border-border/30 p-3.5">
-            <span className="text-[11px] text-var(--muted-text) font-medium">Plan Strategy</span>
-            <div className="text-sm font-bold text-body dark:text-[color:var(--primary-text)] uppercase mt-0.5">{plan.strategy}</div>
+        <div
+          key={`${plan.strategy}-${plan.net_revenue}-${plan.fulfillment_rate}`}
+          className="reveal grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
+        >
+          <div className="bg-surface p-3.5 rounded-xl border border-border shadow-xs">
+            <span className="text-[11px] text-secondary-text font-medium">Plan Strategy</span>
+            <div className="text-sm font-bold text-primary-text font-mono uppercase mt-0.5">{plan.strategy}</div>
           </div>
-          <div className="bg-surface/50 rounded-xl border border-border/30 p-3.5">
-            <span className="text-[11px] text-var(--muted-text) font-medium">Fulfillment Rate</span>
-            <div className="text-sm font-bold text-primary dark:text-[color:var(--primary-text)] mt-0.5">{plan.fulfillment_rate.toFixed(1)}%</div>
+          <div className="bg-surface p-3.5 rounded-xl border border-border shadow-xs">
+            <span className="text-[11px] text-secondary-text font-medium">Demand Fulfilled</span>
+            <div className="text-sm font-bold text-primary font-mono mt-0.5">{plan.fulfillment_rate.toFixed(1)}%</div>
           </div>
-          <div className="bg-surface/50 rounded-xl border border-border/30 p-3.5">
-            <span className="text-[11px] text-var(--muted-text) font-medium">Spoiled Quantity</span>
-            <div className={`text-sm font-bold mt-0.5 ${
-              plan.spoiled_quantity > 0 ? 'text-warning' : 'text-primary'
-            }`}>
+          <div className="bg-surface p-3.5 rounded-xl border border-border shadow-xs">
+            <span className="text-[11px] text-secondary-text font-medium">Spoiled Loss</span>
+            <div className={`text-sm font-bold font-mono mt-0.5 ${plan.spoiled_quantity > 0 ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
               {plan.spoiled_quantity.toLocaleString()} kg
             </div>
           </div>
-          <div className="bg-surface/50 rounded-xl border border-border/30 p-3.5">
-            <span className="text-[11px] text-var(--muted-text) font-medium">Transport Tariffs</span>
-            <div className="text-sm font-bold text-body dark:text-[color:var(--primary-text)] mt-0.5">₹{plan.transport_cost.toLocaleString('en-IN')}</div>
+          <div className="bg-surface p-3.5 rounded-xl border border-border shadow-xs">
+            <span className="text-[11px] text-secondary-text font-medium">Transport Tariffs</span>
+            <div className="text-sm font-bold text-primary-text font-mono mt-0.5">₹{plan.transport_cost.toLocaleString('en-IN')}</div>
           </div>
-          <div className="bg-surface/50 rounded-xl border border-border/30 p-3.5">
-            <span className="text-[11px] text-var(--muted-text) font-medium">Net Realization</span>
-            <div className="text-sm font-bold text-primary dark:text-[color:var(--primary-text)] mt-0.5">₹{plan.net_revenue.toLocaleString('en-IN')}</div>
+          <div className="bg-surface p-3.5 rounded-xl border border-border shadow-xs">
+            <span className="text-[11px] text-secondary-text font-medium">Net Realization</span>
+            <div className="text-sm font-bold text-primary font-mono mt-0.5">₹{plan.net_revenue.toLocaleString('en-IN')}</div>
           </div>
-          <div className="bg-surface/50 rounded-xl border border-border/30 p-3.5">
-            <span className="text-[11px] text-var(--muted-text) font-medium">Violations Blocked</span>
-            <div className="text-sm font-bold text-primary mt-0.5">{plan.infeasible_prevented} avoided</div>
+          <div className="bg-surface p-3.5 rounded-xl border border-border shadow-xs">
+            <span className="text-[11px] text-secondary-text font-medium">Violations Blocked</span>
+            <div className="text-sm font-bold text-primary font-mono mt-0.5">{plan.infeasible_prevented} avoided</div>
           </div>
         </div>
       )}
 
       {/* Main Allocations Table */}
-      <div className="bg-surface rounded-2xl border border-border overflow-shadow-sm">
-        <div className="p-4 border-b border-border/30 flex items-center justify-between">
+      <div className="bg-surface rounded-2xl border border-border shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="font-bold text-body dark:text-[color:var(--primary-text)] text-sm">Recommended Dispatch Allocations</h3>
-            <p className="text-xs text-var(--muted-text)">
-              Click any row to inspect the complete explainability statement and constraint verification proof.
+            <h3 className="font-bold text-primary-text text-sm">Recommended Dispatch Allocations</h3>
+            <p className="text-xs text-secondary-text">
+              Click any allocation row to view the full mathematical explainability statement and proof of feasibility.
             </p>
           </div>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface/20 text-var(--muted-text) border border-border/30">
+          <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-elevated text-secondary-text border border-border">
             {plan?.allocations.length || 0} dispatches
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface/50 border-b border-border/30 text-var(--muted-text) uppercase tracking-wider font-semibold">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-elevated/70 border-b border-border text-secondary-text uppercase tracking-wider font-semibold">
               <tr>
                 <th className="py-3 px-4">Batch ID</th>
                 <th className="py-3 px-4">Commodity</th>
                 <th className="py-3 px-4">Destination Mandi</th>
-                <th className="py-3 px-4 text-right">Allocated (kg)</th>
+                <th className="py-3 px-4 text-right">Allocated Qty</th>
                 <th className="py-3 px-4">Transit Time</th>
-                <th className="py-3 px-4">Arrival Shelf Buffer</th>
-                <th className="py-3 px-4">Selling Price</th>
-                <th className="py-3 px-4 text-right">Net Contribution</th>
+                <th className="py-3 px-4">Arrival Buffer</th>
+                <th className="py-3 px-4 text-right">Selling Price</th>
+                <th className="py-3 px-4 text-right">Net Margin</th>
                 <th className="py-3 px-4 text-center">Explainability</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/30 font-medium text-body dark:text-[color:var(--primary-text)]">
+            <tbody className="divide-y divide-border/40 font-medium text-primary-text">
               {!plan || plan.allocations.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-12 text-var(--muted-text)">
-                    No active distribution allocations. Click "Optimize FreshRoute Plan" above.
+                  <td colSpan={9} className="text-center py-12 text-muted-text">
+                    No active distribution allocations. Click "Execute FreshRoute Optimizer" above.
                   </td>
                 </tr>
               ) : (
-                plan.allocations.map((alloc) => {
+                plan.allocations.map((alloc, allocIdx) => {
                   const isExpanded = expandedRow === alloc.id;
-
                   return (
                     <React.Fragment key={alloc.id}>
-                      <tr
+                      <tr 
                         onClick={() => toggleRow(alloc.id)}
-                        className={`cursor-pointer transition-colors ${
-                          isExpanded ? 'bg-primary/20' : 'hover:bg-primary/5'
+                        style={{ animationDelay: `${Math.min(allocIdx, 10) * 30}ms` }}
+                        className={`row-enter cursor-pointer transition-colors ${
+                          isExpanded 
+                            ? 'bg-primary/5' 
+                            : 'hover:bg-elevated/50'
                         }`}
                       >
-                        <td className="py-3 px-4 font-mono font-bold text-body dark:text-[color:var(--primary-text)]">
+                        <td className="py-3 px-4 font-mono font-bold text-primary">
                           {alloc.batch_code}
                         </td>
-                        <td className="py-3 px-4 font-semibold text-body dark:text-[color:var(--primary-text)]">
+                        <td className="py-3 px-4 font-medium text-primary-text">
                           {alloc.commodity}
                         </td>
-                        <td className="py-3 px-4 font-semibold text-body dark:text-[color:var(--primary-text)]">
+                        <td className="py-3 px-4 font-semibold text-primary-text">
                           {alloc.destination_name}
                         </td>
-                        <td className="py-3 px-4 text-right font-bold text-body dark:text-[color:var(--primary-text)]">
-                          {alloc.allocated_quantity.toLocaleString()} kg
+                        <td className="py-3 px-4 text-right font-mono font-bold text-primary-text tabular-nums">
+                          {alloc.allocated_quantity.toLocaleString()} <span className="text-[10px] text-muted-text">kg</span>
                         </td>
-                        <td className="py-3 px-4 text-var(--muted-text)">
+                        <td className="py-3 px-4 font-mono text-secondary-text">
                           {alloc.travel_time_hours.toFixed(1)}h
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`inline-flex items-center space-x-1 font-mono font-semibold px-2 py-0.5 rounded text-[10px] ${
+                          <span className={`inline-flex items-center space-x-1 font-mono font-semibold px-2 py-0.5 rounded text-[11px] border ${
                             alloc.arrival_shelf_life_remaining <= 6
-                              ? 'bg-warning/20 text-warning border border-warning/30'
-                              : 'bg-primary/20 text-primary border border-primary/30'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                           }`}>
                             <Clock className="w-3 h-3" />
                             <span>{alloc.arrival_shelf_life_remaining.toFixed(1)}h left</span>
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right text-var(--muted-text)">
+                        <td className="py-3 px-4 text-right font-mono text-secondary-text tabular-nums">
                           <div>₹{alloc.effective_selling_price.toFixed(2)}/kg</div>
                           {alloc.discount_percent > 0 && (
-                            <span className="text-[10px] text-warning font-bold">
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
                               (-{alloc.discount_percent.toFixed(0)}% disc)
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-right font-bold text-primary dark:text-[color:var(--primary-text)]">
+                        <td className="py-3 px-4 text-right font-mono font-bold text-primary tabular-nums">
                           ₹{alloc.net_contribution.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <button className="p-1 rounded text-var(--muted-text) hover:text-primary">
+                          <button className="btn-press p-1 rounded text-muted-text hover:text-primary transition-colors">
                             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </button>
                         </td>
@@ -299,30 +301,34 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
                       {/* Expandable Explainability Drawer (FR-07) */}
                       {isExpanded && (
-                        <tr className="border border-primary/20">
+                        <tr className="row-enter bg-primary/5 border-b border-border">
                           <td colSpan={9} className="p-4 space-y-3">
-                            <div className="p-3.5 rounded-xl bg-surface/50 border border-primary/30 shadow-sm space-y-2">
+                            <div className="p-4 bg-surface rounded-xl border border-primary/30 shadow-xs space-y-2">
                               <div className="flex items-center space-x-2 text-primary font-bold text-xs">
-                                <Info className="w-4 h-4 text-primary" />
-                                <span>Algorithmic Explainability Rationale (FR-07)</span>
+                                <Info className="w-4 h-4 text-primary shrink-0" />
+                                <span>Algorithmic Explainability & Feasibility Proof (FR-07)</span>
                               </div>
-                              <p className="text-var(--muted-text) leading-relaxed font-normal">
+                              <p className="text-xs text-primary-text leading-relaxed font-normal">
                                 {alloc.reason}
                               </p>
-                              <div className="pt-2 border-t border-border/30 flex flex-wrap gap-2 text-[10px]">
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-semibold">
-                                  <CheckCircle2 className="w-3 h-3 text-primary" />
-                                  <span>Shelf Life Feasible</span>
+                              <div className="pt-2 border-t border-border flex flex-wrap gap-2 text-[11px]">
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                  <span>Arrival &gt; Min Safety Buffer</span>
                                 </span>
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 font-semibold">
-                                  <CheckCircle2 className="w-3 h-3 text-primary" />
-                                  <span>Within Gate Intake Limit</span>
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                  <span>Within Mandi Receiving Gate Limit</span>
                                 </span>
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-surface/20 text-var(--muted-text) border border-border/30 font-medium">
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                  <span>Within Unmet Market Demand</span>
+                                </span>
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-elevated text-secondary-text border border-border font-mono">
                                   <span>Unit Tariff: ₹{alloc.unit_transport_cost.toFixed(2)}/kg</span>
                                 </span>
-                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-surface/20 text-var(--muted-text) border border-border/30 font-medium">
-                                  <span>Warehouse Handling: ₹{alloc.unit_handling_cost.toFixed(2)}/kg</span>
+                                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-elevated text-secondary-text border border-border font-mono">
+                                  <span>Handling Tariff: ₹{alloc.unit_handling_cost.toFixed(2)}/kg</span>
                                 </span>
                               </div>
                             </div>
@@ -340,21 +346,21 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
       {/* Discount Recommendations Panel (FR-05) */}
       {plan && plan.discount_recommendations.length > 0 && (
-        <div className="bg-surface rounded-2xl border border-border p-5 shadow-sm space-y-4">
+        <div className="bg-surface rounded-2xl p-5 border border-border shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className={`p-1.5 rounded-lg bg-warning/20 text-warning border border-warning/30`}>
+              <span className="p-1.5 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                 <Tag className="w-4 h-4" />
               </span>
               <div>
-                <h3 className="font-bold text-body dark:text-[color:var(--primary-text)] text-sm">Discount & Margin Preservation Recommendations</h3>
-                <p className="text-xs text-var(--muted-text)">
-                  Rule-based dynamic discount alerts triggered to clear near-expiry inventory before total write-off (FR-05).
+                <h3 className="font-bold text-primary-text text-sm">Discount & Margin Preservation Recommendations</h3>
+                <p className="text-xs text-secondary-text">
+                  Rule-based dynamic discount alerts triggered to clear near-expiry inventory before total spoilage (FR-05).
                 </p>
               </div>
             </div>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-warning/10 text-warning">
-              {plan.discount_recommendations.length} batches recommended
+            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              {plan.discount_recommendations.length} markdown alerts
             </span>
           </div>
 
@@ -362,37 +368,37 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
             {plan.discount_recommendations.map((rec) => (
               <div
                 key={rec.id}
-                className="p-3.5 rounded-xl border border-border/30 bg-surface/50 hover:bg-surface/60 transition-all text-xs space-y-2 flex flex-col justify-between"
+                className="p-3.5 rounded-xl border border-border bg-elevated/40 hover:bg-elevated/70 transition-all text-xs space-y-2 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-body dark:text-[color:var(--primary-text)]">{rec.batch_code}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    <span className="font-mono font-bold text-primary-text">{rec.batch_code}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${
                       rec.risk_level === 'critical'
-                        ? 'bg-warning/20 text-warning border border-warning/30'
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/20'
                         : rec.risk_level === 'high_risk'
-                        ? 'bg-primary/20 text-primary border border-primary/30'
-                        : 'bg-primary/20 text-primary border border-primary/30'
+                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                        : 'bg-primary/10 text-primary border-primary/20'
                     }`}>
                       {rec.risk_level.replace('_', ' ')}
                     </span>
                   </div>
 
-                  <div className="mt-1 flex items-center justify-between text-var(--muted-text) font-semibold">
-                    <span>{rec.commodity} ({rec.quantity} kg)</span>
-                    <span className="text-primary font-bold">
+                  <div className="mt-1 flex items-center justify-between font-semibold">
+                    <span className="text-primary-text">{rec.commodity} ({rec.quantity.toLocaleString()} kg)</span>
+                    <span className="text-primary font-bold font-mono">
                       -{rec.recommended_discount_percent.toFixed(0)}% Off
                     </span>
                   </div>
 
-                  <p className="mt-2 text-[10px] text-var(--muted-text) leading-relaxed font-normal">
+                  <p className="mt-2 text-[11px] text-secondary-text leading-relaxed font-normal">
                     {rec.reason}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-border/30 text-[10px] text-var(--muted-text) flex justify-between items-center">
-                  <span>Price: ₹{rec.discounted_price.toFixed(1)}/kg (was ₹{rec.original_price.toFixed(1)})</span>
-                  <span className="font-bold text-primary">{rec.expected_margin_impact}</span>
+                <div className="pt-2 border-t border-border text-[10px] text-muted-text flex justify-between items-center font-mono">
+                  <span>Price: ₹{rec.discounted_price.toFixed(1)}/kg <span className="line-through text-muted-text/70">₹{rec.original_price.toFixed(1)}</span></span>
+                  <span className="font-semibold text-primary">{rec.expected_margin_impact}</span>
                 </div>
               </div>
             ))}
