@@ -41,8 +41,8 @@
   --primary-hover: #105638;
   --accent: #B7E36A;
   --primary-text: #17211B;
-  --secondary-text: #66736A;
-  --muted-text: #8E9E93;
+  --secondary-text: #4B5A51;
+  --muted-text: #667A6E;
   --border: #E1E8E1;
   --border-light: #EEF3EE;
   --success: #10B981;
@@ -71,8 +71,8 @@
   --primary-hover: #48CA84;
   --accent: #C6ED83;
   --primary-text: #EDF5EE;
-  --secondary-text: #A0B0A5;
-  --muted-text: #6E7E74;
+  --secondary-text: #C4D3C9;
+  --muted-text: #96A89D;
   --border: #2C3930;
   --border-light: #222E26;
   --success: #34D399;
@@ -93,8 +93,8 @@
     --primary-hover: #48CA84;
     --accent: #C6ED83;
     --primary-text: #EDF5EE;
-    --secondary-text: #A0B0A5;
-    --muted-text: #6E7E74;
+    --secondary-text: #C4D3C9;
+    --muted-text: #96A89D;
     --border: #2C3930;
     --border-light: #222E26;
     --success: #34D399;
@@ -157,20 +157,6 @@ html.fresh-cursor-on,
 html.fresh-cursor-on * {
   cursor: none !important;
 }
-/* Text-entry surfaces keep the native caret cursor; everything else
-   stays hidden behind the custom cursor (link state applies). */
-html.fresh-cursor-on :is(
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="color"]),
-  textarea,
-  [contenteditable="true"]
-) {
-  cursor: text !important;
-}
-/* Disabled controls keep the native disabled affordance */
-html.fresh-cursor-on :is(button, input, select, textarea, a)[disabled],
-html.fresh-cursor-on [aria-disabled="true"] {
-  cursor: not-allowed !important;
-}
 @media (prefers-reduced-motion: reduce) {
   html.fresh-cursor-on,
   html.fresh-cursor-on * {
@@ -181,7 +167,7 @@ html.fresh-cursor-on [aria-disabled="true"] {
 .fr-cursor {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 100000;
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--motion-standard) ease-out;
@@ -205,39 +191,58 @@ html.fresh-cursor-on [aria-disabled="true"] {
 }
 
 .fr-cursor__ring {
-  width: 34px;
-  height: 34px;
-  border: 1.5px solid color-mix(in srgb, var(--primary) 55%, transparent);
-  background: color-mix(in srgb, var(--primary) 7%, transparent);
-  transition: border-color 200ms ease-out, background-color 200ms ease-out;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  transition: border-color 150ms ease-out, background-color 150ms ease-out;
 }
 
 .fr-cursor__dot {
-  width: 6px;
-  height: 6px;
-  background: var(--primary);
-  transition: background-color 200ms ease-out;
+  width: 8px;
+  height: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid #000000;
+  box-shadow: 0 0 0 1.5px var(--primary), 0 2px 4px rgba(0, 0, 0, 0.6);
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out;
 }
 
 /* Hover over buttons / links: ring expands, accent color */
 .fr-cursor.is-link .fr-cursor__ring {
-  border-color: color-mix(in srgb, var(--primary) 85%, transparent);
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8), 0 0 12px color-mix(in srgb, var(--primary) 40%, transparent);
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
 }
 .fr-cursor.is-link .fr-cursor__dot {
-  background: var(--accent);
+  background: #FFFFFF;
+  border: 1.5px solid #000000;
+  box-shadow: 0 0 0 2px var(--accent), 0 2px 6px rgba(0, 0, 0, 0.7);
 }
 
 /* Hover over cards: subtle highlight */
 .fr-cursor.is-card .fr-cursor__ring {
   border-style: dashed;
-  border-color: color-mix(in srgb, var(--primary) 65%, transparent);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
 }
 
 /* Chart / data-inspection state */
 .fr-cursor.is-data .fr-cursor__ring {
   border-color: color-mix(in srgb, var(--accent) 80%, transparent);
   background: transparent;
+}
+
+/* Text fields / inputs: precision dot + compact ring */
+.fr-cursor.is-text .fr-cursor__ring {
+  border-color: var(--primary);
+  border-width: 1.5px;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+.fr-cursor.is-text .fr-cursor__dot {
+  background: #FFFFFF;
+  border: 1px solid #000000;
+  box-shadow: 0 0 0 1.5px var(--primary);
 }
 
 /* Hidden state: text fields, disabled controls, window leave */

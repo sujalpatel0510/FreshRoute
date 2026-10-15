@@ -10,6 +10,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import type { DistributionPlan, Scenario } from '../types';
+import { Tooltip } from './Tooltip';
 
 interface PlannerPageProps {
   plan: DistributionPlan | null;
@@ -68,54 +69,70 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={handleRun}
-            disabled={loading}
-            className={`btn-press flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0 ${
-              strategy === 'freshroute'
-                ? 'bg-primary hover:bg-primary-hover text-white'
-                : 'bg-elevated hover:bg-border/60 text-primary-text border border-border'
-            }`}
-          >
-            <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : 'text-accent'}`} />
-            <span>{loading ? 'Solving Engine...' : strategy === 'freshroute' ? 'Execute FreshRoute Optimizer' : 'Compute Baseline (FIFO)'}</span>
-          </button>
+          <Tooltip text="Execute deterministic FEFO multi-objective allocation engine">
+            <button
+              onClick={handleRun}
+              disabled={loading}
+              className={`btn-press flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0 ${
+                strategy === 'freshroute'
+                  ? 'bg-primary hover:bg-primary-hover text-white dark:text-neutral-950'
+                  : 'bg-elevated hover:bg-border/60 text-primary-text border border-border'
+              }`}
+            >
+              <Zap className={`w-4 h-4 ${loading ? 'animate-spin' : 'text-accent dark:text-neutral-950'}`} />
+              <span>{loading ? 'Solving Engine...' : strategy === 'freshroute' ? 'Execute FreshRoute Optimizer' : 'Compute Baseline (FIFO)'}</span>
+            </button>
+          </Tooltip>
         </div>
 
         {/* Control Parameters Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
           {/* Strategy Selector */}
           <div>
-            <label className="block font-semibold text-secondary-text mb-1">Planning Algorithm</label>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="block font-semibold text-secondary-text">Planning Algorithm</label>
+              <Tooltip text="Choose between intelligent FEFO optimization and naive FIFO baseline">
+                <Info className="w-3 h-3 text-muted-text cursor-help" />
+              </Tooltip>
+            </div>
             <div className="grid grid-cols-2 gap-1.5 p-1 bg-elevated rounded-lg border border-border">
-              <button
-                type="button"
-                onClick={() => setStrategy('freshroute')}
-                className={`btn-press py-1.5 text-center font-bold rounded-md text-xs transition-all cursor-pointer ${
-                  strategy === 'freshroute'
-                    ? 'bg-surface text-primary shadow-xs font-bold border border-primary/20'
-                    : 'text-secondary-text hover:text-primary-text'
-                }`}
-              >
-                FreshRoute (FEFO)
-              </button>
-              <button
-                type="button"
-                onClick={() => setStrategy('baseline')}
-                className={`btn-press py-1.5 text-center font-medium rounded-md text-xs transition-all cursor-pointer ${
-                  strategy === 'baseline'
-                    ? 'bg-surface text-primary-text shadow-xs font-bold border border-border'
-                    : 'text-secondary-text hover:text-primary-text'
-                }`}
-              >
-                Baseline (FIFO)
-              </button>
+              <Tooltip text="Prioritize batches by earliest expiration to maximize shelf-life utilization">
+                <button
+                  type="button"
+                  onClick={() => setStrategy('freshroute')}
+                  className={`btn-press w-full py-1.5 text-center font-bold rounded-md text-xs transition-all cursor-pointer ${
+                    strategy === 'freshroute'
+                      ? 'bg-surface text-primary shadow-xs font-bold border border-primary/20'
+                      : 'text-secondary-text hover:text-primary-text'
+                  }`}
+                >
+                  FreshRoute (FEFO)
+                </button>
+              </Tooltip>
+              <Tooltip text="First-In-First-Out legacy dispatch without perishability consideration">
+                <button
+                  type="button"
+                  onClick={() => setStrategy('baseline')}
+                  className={`btn-press w-full py-1.5 text-center font-medium rounded-md text-xs transition-all cursor-pointer ${
+                    strategy === 'baseline'
+                      ? 'bg-surface text-primary-text shadow-xs font-bold border border-border'
+                      : 'text-secondary-text hover:text-primary-text'
+                  }`}
+                >
+                  Baseline (FIFO)
+                </button>
+              </Tooltip>
             </div>
           </div>
 
           {/* Scenario Selector */}
           <div>
-            <label className="block font-semibold text-secondary-text mb-1">Benchmark Scenario</label>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="block font-semibold text-secondary-text">Benchmark Scenario</label>
+              <Tooltip text="Evaluate under normal conditions or simulated real-world supply chain disruptions">
+                <Info className="w-3 h-3 text-muted-text cursor-help" />
+              </Tooltip>
+            </div>
             <select
               value={selectedScenario}
               onChange={(e) => setSelectedScenario(e.target.value)}
@@ -132,7 +149,12 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
           {/* Shelf Life Buffer */}
           <div>
             <div className="flex justify-between font-semibold text-secondary-text mb-1">
-              <span>Arrival Safety Margin</span>
+              <div className="flex items-center space-x-1">
+                <span>Arrival Safety Margin</span>
+                <Tooltip text="Minimum safety margin buffer hours produce must retain upon arrival at mandi gates">
+                  <Info className="w-3 h-3 text-muted-text cursor-help" />
+                </Tooltip>
+              </div>
               <span className="font-mono font-bold text-primary">{bufferHours} Hours</span>
             </div>
             <div className="flex items-center space-x-2">
@@ -151,22 +173,29 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
           {/* Discount Policy Toggle */}
           <div>
-            <label className="block font-semibold text-secondary-text mb-1">Markdown Clearance Engine</label>
+            <div className="flex items-center space-x-1 mb-1">
+              <label className="block font-semibold text-secondary-text">Markdown Clearance Engine</label>
+              <Tooltip text="Rule FR-05: Automatically apply 10-30% discounts to prevent terminal spoilage of expiring lots">
+                <Info className="w-3 h-3 text-muted-text cursor-help" />
+              </Tooltip>
+            </div>
+            <Tooltip text={enableDiscounts ? "Discounts enabled: clear near-expiry inventory" : "Discounts disabled: full price only"}>
               <button
                 type="button"
                 onClick={() => setEnableDiscounts(!enableDiscounts)}
                 className={`btn-press w-full py-2 px-3 rounded-lg border flex items-center justify-between font-semibold text-xs transition-all cursor-pointer ${
-                enableDiscounts
-                  ? 'bg-primary/10 border-primary/30 text-primary'
-                  : 'bg-elevated border-border text-secondary-text'
-              }`}
-            >
-              <span className="flex items-center space-x-1.5">
-                <Tag className="w-3.5 h-3.5" />
-                <span>{enableDiscounts ? 'Discounts Active (FR-05)' : 'No Discounts'}</span>
-              </span>
-              <span className={`w-2 h-2 rounded-full ${enableDiscounts ? 'bg-primary animate-pulse' : 'bg-muted-text'}`} />
-            </button>
+                  enableDiscounts
+                    ? 'bg-primary/10 border-primary/30 text-primary'
+                    : 'bg-elevated border-border text-secondary-text'
+                }`}
+              >
+                <span className="flex items-center space-x-1.5">
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>{enableDiscounts ? 'Discounts Active (FR-05)' : 'No Discounts'}</span>
+                </span>
+                <span className={`w-2 h-2 rounded-full ${enableDiscounts ? 'bg-primary animate-pulse' : 'bg-muted-text'}`} />
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -269,17 +298,21 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
                           {alloc.allocated_quantity.toLocaleString()} <span className="text-[10px] text-muted-text">kg</span>
                         </td>
                         <td className="py-3 px-4 font-mono text-secondary-text">
-                          {alloc.travel_time_hours.toFixed(1)}h
+                          <div className="font-semibold text-primary-text">{alloc.travel_time_hours.toFixed(1)}h</div>
+                          <div className="text-[10px] text-muted-text font-mono">±0.5h buffer</div>
                         </td>
                         <td className="py-3 px-4">
-                          <span className={`inline-flex items-center space-x-1 font-mono font-semibold px-2 py-0.5 rounded text-[11px] border ${
-                            alloc.arrival_shelf_life_remaining <= 6
-                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                          }`}>
-                            <Clock className="w-3 h-3" />
-                            <span>{alloc.arrival_shelf_life_remaining.toFixed(1)}h left</span>
-                          </span>
+                          <div className="space-y-1">
+                            <span className={`inline-flex items-center space-x-1 font-mono font-semibold px-2 py-0.5 rounded text-[11px] border ${
+                              alloc.arrival_shelf_life_remaining <= 6
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                                : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                            }`}>
+                              <Clock className="w-3 h-3" />
+                              <span>{alloc.arrival_shelf_life_remaining.toFixed(1)}h left</span>
+                            </span>
+                            <div className="text-[10px] text-muted-text font-mono">Safe margin (&gt; 4.0h)</div>
+                          </div>
                         </td>
                         <td className="py-3 px-4 text-right font-mono text-secondary-text tabular-nums">
                           <div>₹{alloc.effective_selling_price.toFixed(2)}/kg</div>

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
 
-type CursorState = "default" | "link" | "card" | "data" | "hidden";
+type CursorState = "default" | "link" | "card" | "data" | "text" | "hidden";
 
 const INTERACTIVE_SELECTOR =
-  'a, button, [role="button"], [role="link"], input[type="button"], input[type="submit"], summary';
+  'a, button, [role="button"], [role="link"], input[type="button"], input[type="submit"], summary, select, [role="combobox"], [role="option"], [data-cursor="link"]';
 const TEXT_SELECTOR =
   'textarea, [contenteditable="true"], input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="color"])';
 const DISABLED_SELECTOR =
@@ -25,10 +25,10 @@ function classify(target: EventTarget | null): Classification {
   const magnetic = el.closest("[data-magnetic]") as HTMLElement | null;
 
   if (el.closest(DISABLED_SELECTOR)) {
-    return { state: "hidden", label: "", magnetic: null };
+    return { state: "default", label: "Disabled", magnetic: null };
   }
   if (el.closest(TEXT_SELECTOR)) {
-    return { state: "hidden", label: "", magnetic: null };
+    return { state: "text", label: "", magnetic: null };
   }
 
   const labelHost = el.closest(LABEL_SELECTOR);
@@ -120,14 +120,15 @@ export const Cursor: React.FC = () => {
       root.classList.toggle("is-link", next === "link");
       root.classList.toggle("is-card", next === "card");
       root.classList.toggle("is-data", next === "data");
+      root.classList.toggle("is-text", next === "text");
       root.classList.toggle("is-hidden", next === "hidden");
       root.classList.toggle("has-label", next !== "hidden" && label.length > 0);
       if (label.length > 0) {
         labelSpan.textContent = label;
       }
-      dotScaleTarget = next === "link" ? 1.7 : next === "hidden" ? 0.5 : 1;
+      dotScaleTarget = next === "link" ? 1.7 : next === "text" ? 0.8 : next === "hidden" ? 0.5 : 1;
       ringScaleTarget =
-        next === "link" ? 1.25 : next === "card" ? 1.12 : next === "data" ? 1.05 : next === "hidden" ? 0.7 : 1;
+        next === "link" ? 1.25 : next === "text" ? 0.8 : next === "card" ? 1.12 : next === "data" ? 1.05 : next === "hidden" ? 0.7 : 1;
       wake();
     };
 
@@ -251,9 +252,9 @@ export const Cursor: React.FC = () => {
       pressed = false;
       root.classList.remove("is-active");
       const next = state;
-      dotScaleTarget = next === "link" ? 1.7 : next === "hidden" ? 0.5 : 1;
+      dotScaleTarget = next === "link" ? 1.7 : next === "text" ? 0.8 : next === "hidden" ? 0.5 : 1;
       ringScaleTarget =
-        next === "link" ? 1.25 : next === "card" ? 1.12 : next === "data" ? 1.05 : next === "hidden" ? 0.7 : 1;
+        next === "link" ? 1.25 : next === "text" ? 0.8 : next === "card" ? 1.12 : next === "data" ? 1.05 : next === "hidden" ? 0.7 : 1;
       wake();
     };
 

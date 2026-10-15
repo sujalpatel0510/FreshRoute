@@ -68,7 +68,18 @@ class TransportOptionOut(TransportOptionBase):
     class Config:
         from_attributes = True
 
-# Destination Schemas
+class DemandCreateIn(BaseModel):
+    commodity: str
+    demand_quantity: float = Field(..., gt=0)
+    selling_price: float = Field(..., gt=0)
+    delivery_deadline_hours: float = Field(default=48.0, gt=0)
+
+class DemandUpdate(BaseModel):
+    commodity: Optional[str] = None
+    demand_quantity: Optional[float] = Field(None, gt=0)
+    selling_price: Optional[float] = Field(None, gt=0)
+    delivery_deadline_hours: Optional[float] = Field(None, gt=0)
+
 class DestinationBase(BaseModel):
     code: str
     name: str
@@ -81,6 +92,12 @@ class DestinationBase(BaseModel):
 class DestinationCreate(DestinationBase):
     demands: Optional[List[DemandBase]] = None
     transport_options: Optional[List[TransportOptionBase]] = None
+
+class DestinationUpdate(BaseModel):
+    name: Optional[str] = None
+    location: Optional[str] = None
+    state: Optional[str] = None
+    receiving_capacity: Optional[float] = Field(None, gt=0)
 
 class DestinationOut(DestinationBase):
     id: int

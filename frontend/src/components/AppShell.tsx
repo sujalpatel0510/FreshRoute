@@ -205,39 +205,53 @@ export const AppShell: React.FC<AppShellProps> = ({
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  ref={(el) => {
-                    itemRefs.current[item.id] = el;
-                  }}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setMobileDrawerOpen(false);
-                  }}
-                  title={sidebarCollapsed ? item.label : undefined}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`
-                    btn-press w-full flex items-center rounded-xl px-3 py-2.5 text-xs font-medium transition-all group relative
-                    ${isActive 
-                      ? 'bg-primary/10 text-primary font-semibold shadow-xs border border-primary/20' 
-                      : 'text-secondary-text hover:text-primary-text hover:bg-elevated border border-transparent'}
-                    ${sidebarCollapsed && !mobileDrawerOpen ? 'justify-center' : 'justify-between'}
-                  `}
-                >
-                  <div className="flex items-center space-x-3 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 transition-all group-hover:scale-110 ${isActive ? 'text-primary' : 'text-muted-text group-hover:text-primary'}`} />
-                    {(!sidebarCollapsed || mobileDrawerOpen) && (
-                      <span className="truncate">{item.label}</span>
-                    )}
-                  </div>
+              const descriptions: Record<string, string> = {
+                dashboard: 'High-level KPI health, urgent stock alerts & benchmark summary',
+                inventory: 'Manage produce batches, remaining shelf life & cold-storage hubs',
+                destinations: 'APMC mandis, cold-chain routes, freight tariffs & market demands',
+                planner: 'Deterministic FEFO allocation solver & automated markdown discounts',
+                analytics: 'Economic benchmarking, spoilage reduction & demand fulfillment',
+                simulator: 'Operational shock testing (heatwaves, roadblocks, price crashes)',
+              };
 
-                  {(!sidebarCollapsed || mobileDrawerOpen) && item.badge && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-medium border ${item.badgeColor}`}>
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
+              return (
+                <Tooltip
+                  key={item.id}
+                  text={descriptions[item.id] || item.label}
+                  position={sidebarCollapsed && !mobileDrawerOpen ? 'right' : 'top'}
+                  wrapperClassName="w-full block"
+                >
+                  <button
+                    ref={(el) => {
+                      itemRefs.current[item.id] = el;
+                    }}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setMobileDrawerOpen(false);
+                    }}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`
+                      btn-press w-full flex items-center rounded-xl px-3 py-2.5 text-xs font-medium transition-all group relative cursor-pointer
+                      ${isActive 
+                        ? 'bg-primary/10 text-primary font-semibold shadow-xs border border-primary/20' 
+                        : 'text-secondary-text hover:text-primary-text hover:bg-elevated border border-transparent'}
+                      ${sidebarCollapsed && !mobileDrawerOpen ? 'justify-center' : 'justify-between'}
+                    `}
+                  >
+                    <div className="flex items-center space-x-3 min-w-0">
+                      <Icon className={`w-4 h-4 shrink-0 transition-all group-hover:scale-110 ${isActive ? 'text-primary' : 'text-muted-text group-hover:text-primary'}`} />
+                      {(!sidebarCollapsed || mobileDrawerOpen) && (
+                        <span className="truncate">{item.label}</span>
+                      )}
+                    </div>
+
+                    {(!sidebarCollapsed || mobileDrawerOpen) && item.badge && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-medium border ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                </Tooltip>
               );
             })}
           </div>
@@ -246,19 +260,22 @@ export const AppShell: React.FC<AppShellProps> = ({
         {/* Sidebar Footer */}
         <div className="p-3 border-t border-border flex items-center justify-between">
           {(!sidebarCollapsed || mobileDrawerOpen) && (
-            <div className="flex items-center space-x-2 text-[11px] text-muted-text font-mono truncate">
-              <Database className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="truncate">PostgreSQL Grounded</span>
-            </div>
+            <Tooltip text="PostgreSQL 17 relational database connected & synchronized" position="right">
+              <div className="flex items-center space-x-2 text-[11px] text-muted-text font-mono truncate cursor-help">
+                <Database className="w-3.5 h-3.5 text-emerald-500" />
+                <span className="truncate">PostgreSQL Grounded</span>
+              </div>
+            </Tooltip>
           )}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="btn-press hidden lg:flex p-1.5 rounded-lg text-muted-text hover:text-primary-text hover:bg-elevated ml-auto transition-colors"
-            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+          <Tooltip text={sidebarCollapsed ? "Expand sidebar navigation" : "Collapse sidebar navigation"} position="right">
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="btn-press hidden lg:flex p-1.5 rounded-lg text-muted-text hover:text-primary-text hover:bg-elevated ml-auto transition-colors cursor-pointer"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          </Tooltip>
         </div>
       </aside>
 
@@ -299,7 +316,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Filter produce or mandi..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-elevated/70 border border-border rounded-lg text-primary-text placeholder-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-elevated/70 border border-border rounded-lg text-primary-text placeholder:text-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
               />
               {searchQuery && (
                 <button 
@@ -317,9 +334,9 @@ export const AppShell: React.FC<AppShellProps> = ({
                 onClick={onQuickOptimize}
                 disabled={isOptimizing}
                 data-magnetic
-                className="btn-press flex items-center space-x-1.5 px-3 py-1.5 bg-primary text-white hover:bg-primary-hover font-semibold text-xs rounded-lg shadow-xs disabled:opacity-60 cursor-pointer"
+                className="btn-press flex items-center space-x-1.5 px-3 py-1.5 bg-primary text-white dark:text-neutral-950 hover:bg-primary-hover font-bold text-xs rounded-lg shadow-xs disabled:opacity-60 cursor-pointer"
               >
-                <Zap className={`w-3.5 h-3.5 text-accent ${isOptimizing ? 'animate-spin' : ''}`} />
+                <Zap className={`w-3.5 h-3.5 text-accent dark:text-neutral-950 ${isOptimizing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">{isOptimizing ? 'Solving...' : 'Optimize Plan'}</span>
               </button>
             </Tooltip>
@@ -337,7 +354,9 @@ export const AppShell: React.FC<AppShellProps> = ({
             </Tooltip>
 
             {/* Theme Toggle */}
-            <ThemeToggle />
+            <Tooltip text="Toggle theme mode (Dark / Light)">
+              <ThemeToggle />
+            </Tooltip>
           </div>
         </header>
 

@@ -11,10 +11,12 @@ import {
   ArrowUpDown,
   CheckCircle2,
   PackageCheck,
-  Loader2
+  Loader2,
+  Thermometer
 } from 'lucide-react';
 import type { Batch } from '../types';
 import { Overlay } from './Overlay';
+import { Tooltip } from './Tooltip';
 
 interface InventoryPageProps {
   batches: Batch[];
@@ -241,6 +243,9 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
             <span>{hours.toFixed(1)}h (Critical)</span>
           </span>
+          <div className="flex items-center justify-between w-24 text-[9px] font-mono text-muted-text">
+            <span>±1.0h band</span>
+          </div>
           <div className="w-24 h-1 bg-elevated rounded-full overflow-hidden">
             <div className="bg-rose-500 h-full" style={{ width: `${Math.min(100, (hours / 48) * 100)}%` }} />
           </div>
@@ -254,6 +259,9 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
             <Clock className="w-3 h-3 text-amber-500" />
             <span>{hours.toFixed(1)}h (Urgent)</span>
           </span>
+          <div className="flex items-center justify-between w-24 text-[9px] font-mono text-muted-text">
+            <span>±1.5h band</span>
+          </div>
           <div className="w-24 h-1 bg-elevated rounded-full overflow-hidden">
             <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, (hours / 48) * 100)}%` }} />
           </div>
@@ -266,6 +274,9 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
           <CheckCircle2 className="w-3 h-3 text-emerald-500" />
           <span>{hours.toFixed(1)}h (Fresh)</span>
         </span>
+        <div className="flex items-center justify-between w-24 text-[9px] font-mono text-muted-text">
+          <span>±2.0h band</span>
+        </div>
         <div className="w-24 h-1 bg-elevated rounded-full overflow-hidden">
           <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, (hours / 72) * 100)}%` }} />
         </div>
@@ -291,13 +302,15 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="btn-press flex items-center justify-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-xs cursor-pointer shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Register New Batch</span>
-        </button>
+        <Tooltip text="Register a newly harvested or received agricultural produce batch">
+          <button
+            onClick={handleOpenAdd}
+            className="btn-press flex items-center justify-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white dark:text-neutral-950 font-bold text-xs shadow-xs cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Register New Batch</span>
+          </button>
+        </Tooltip>
       </div>
 
       {/* Filters, Search & View Controls */}
@@ -310,42 +323,44 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
             placeholder="Search lot code, produce, or warehouse..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-elevated/60 border border-border rounded-lg text-primary-text placeholder-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-elevated/60 border border-border rounded-lg text-primary-text placeholder:text-muted-text focus:bg-surface focus:border-primary focus:outline-none transition-all"
           />
         </div>
 
         {/* Commodity Filter Pills */}
         <div className="flex items-center space-x-1 overflow-x-auto pb-1 lg:pb-0">
           {commodities.map((comm) => (
-            <button
-              key={comm}
-              onClick={() => setSelectedCommodity(comm)}
-              className={`btn-press px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                selectedCommodity.toLowerCase() === comm.toLowerCase()
-                  ? 'bg-primary/15 text-primary border border-primary/30 font-semibold shadow-xs'
-                  : 'bg-elevated/70 text-secondary-text hover:text-primary-text hover:bg-border/60 border border-transparent'
-              }`}
-            >
-              {comm !== 'All' && <span className="mr-1">{getCommodityEmoji(comm)}</span>}
-              <span>{comm}</span>
-            </button>
+            <Tooltip key={comm} text={`Filter inventory for ${comm}`}>
+              <button
+                onClick={() => setSelectedCommodity(comm)}
+                className={`btn-press px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+                  selectedCommodity.toLowerCase() === comm.toLowerCase()
+                    ? 'bg-primary/15 text-primary border border-primary/30 font-semibold shadow-xs'
+                    : 'bg-elevated/70 text-secondary-text hover:text-primary-text hover:bg-border/60 border border-transparent'
+                }`}
+              >
+                {comm !== 'All' && <span className="mr-1">{getCommodityEmoji(comm)}</span>}
+                <span>{comm}</span>
+              </button>
+            </Tooltip>
           ))}
         </div>
 
         {/* Urgency Filter */}
         <div className="flex items-center space-x-1 shrink-0">
           {['All', 'Critical', 'Urgent', 'Fresh'].map((urgency) => (
-            <button
-              key={urgency}
-              onClick={() => setSelectedUrgency(urgency)}
-              className={`btn-press px-2 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
-                selectedUrgency === urgency
-                  ? 'bg-primary text-white font-semibold'
-                  : 'text-secondary-text hover:bg-elevated'
-              }`}
-            >
-              {urgency}
-            </button>
+            <Tooltip key={urgency} text={`Filter by ${urgency} shelf-life category`}>
+              <button
+                onClick={() => setSelectedUrgency(urgency)}
+                className={`btn-press px-2 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
+                  selectedUrgency === urgency
+                    ? 'bg-primary text-white dark:text-neutral-950 font-bold'
+                    : 'text-secondary-text hover:bg-elevated'
+                }`}
+              >
+                {urgency}
+              </button>
+            </Tooltip>
           ))}
         </div>
       </div>
@@ -357,31 +372,47 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
             <thead className="bg-elevated/70 border-b border-border text-secondary-text uppercase tracking-wider font-semibold">
               <tr>
                 <th className="py-3 px-4 cursor-pointer hover:text-primary-text transition-colors" onClick={() => toggleSort('batch_code')}>
-                  <div className="flex items-center space-x-1">
-                    <span>Batch ID</span>
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'batch_code' ? 'text-primary' : 'text-muted-text'}`} />
-                  </div>
+                  <Tooltip text="Click to sort by batch ID">
+                    <div className="flex items-center space-x-1">
+                      <span>Batch ID</span>
+                      <ArrowUpDown className={`w-3 h-3 ${sortField === 'batch_code' ? 'text-primary' : 'text-muted-text'}`} />
+                    </div>
+                  </Tooltip>
                 </th>
                 <th className="py-3 px-4 cursor-pointer hover:text-primary-text transition-colors" onClick={() => toggleSort('commodity')}>
-                  <div className="flex items-center space-x-1">
-                    <span>Commodity</span>
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'commodity' ? 'text-primary' : 'text-muted-text'}`} />
-                  </div>
+                  <Tooltip text="Click to sort by commodity crop type">
+                    <div className="flex items-center space-x-1">
+                      <span>Commodity</span>
+                      <ArrowUpDown className={`w-3 h-3 ${sortField === 'commodity' ? 'text-primary' : 'text-muted-text'}`} />
+                    </div>
+                  </Tooltip>
                 </th>
                 <th className="py-3 px-4 text-right cursor-pointer hover:text-primary-text transition-colors" onClick={() => toggleSort('quantity')}>
-                  <div className="flex items-center justify-end space-x-1">
-                    <span>Available Qty</span>
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'quantity' ? 'text-primary' : 'text-muted-text'}`} />
-                  </div>
+                  <Tooltip text="Click to sort by available quantity">
+                    <div className="flex items-center justify-end space-x-1">
+                      <span>Available Qty</span>
+                      <ArrowUpDown className={`w-3 h-3 ${sortField === 'quantity' ? 'text-primary' : 'text-muted-text'}`} />
+                    </div>
+                  </Tooltip>
                 </th>
                 <th className="py-3 px-4 cursor-pointer hover:text-primary-text transition-colors" onClick={() => toggleSort('remaining_shelf_life')}>
-                  <div className="flex items-center space-x-1">
-                    <span>Remaining Shelf Life</span>
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'remaining_shelf_life' ? 'text-primary' : 'text-muted-text'}`} />
-                  </div>
+                  <Tooltip text="Click to sort by remaining shelf life (FEFO)">
+                    <div className="flex items-center space-x-1">
+                      <span>Remaining Shelf Life</span>
+                      <ArrowUpDown className={`w-3 h-3 ${sortField === 'remaining_shelf_life' ? 'text-primary' : 'text-muted-text'}`} />
+                    </div>
+                  </Tooltip>
                 </th>
-                <th className="py-3 px-4">Storage Location</th>
-                <th className="py-3 px-4 text-right">Tariffs (₹/kg)</th>
+                <th className="py-3 px-4">
+                  <Tooltip text="Storage hub facility and climate control">
+                    <span>Storage Location</span>
+                  </Tooltip>
+                </th>
+                <th className="py-3 px-4 text-right">
+                  <Tooltip text="Inland handling and procurement tariffs per kg">
+                    <span>Tariffs (₹/kg)</span>
+                  </Tooltip>
+                </th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
@@ -446,7 +477,11 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                     <td className="py-3 px-4 text-secondary-text">
                       <div className="flex items-center space-x-1.5">
                         <Warehouse className="w-3.5 h-3.5 text-muted-text shrink-0" />
-                        <span className="truncate max-w-[140px]">{batch.storage_location}</span>
+                        <span className="truncate max-w-[140px] font-medium text-primary-text">{batch.storage_location}</span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-[10px] font-mono mt-0.5 text-emerald-600 dark:text-emerald-400">
+                        <Thermometer className="w-3 h-3 shrink-0" />
+                        <span>{batch.remaining_shelf_life > 20 ? '3.2°C Reefer (Optimal)' : '8.4°C Ambient (Expedite)'}</span>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-right font-mono text-[11px] tabular-nums">
@@ -468,20 +503,22 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end space-x-1">
-                        <button
-                          onClick={() => handleOpenEdit(batch)}
-                          className="btn-press p-1.5 text-muted-text hover:text-primary hover:bg-elevated rounded-lg transition-all cursor-pointer"
-                          title="Edit batch"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => { setDeletingBatch(batch); setDeleteOpen(true); }}
-                          className="btn-press p-1.5 text-muted-text hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
-                          title="Delete batch"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <Tooltip text="Edit batch details">
+                          <button
+                            onClick={() => handleOpenEdit(batch)}
+                            className="btn-press p-1.5 text-muted-text hover:text-primary hover:bg-elevated rounded-lg transition-all cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="Delete batch from database">
+                          <button
+                            onClick={() => { setDeletingBatch(batch); setDeleteOpen(true); }}
+                            className="btn-press p-1.5 text-muted-text hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </Tooltip>
                       </div>
                     </td>
                     </tr>
@@ -556,10 +593,10 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                   <input
                     type="number"
                     min="1"
-                    step="50"
+                    step="any"
                     required
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) || 0 })}
+                    value={formData.quantity === 0 ? '' : formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text font-mono focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -567,11 +604,11 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                   <label className="block font-semibold text-secondary-text mb-1">Shelf Life Remaining (Hours)</label>
                   <input
                     type="number"
-                    min="1"
-                    step="0.5"
+                    min="0.1"
+                    step="any"
                     required
-                    value={formData.remaining_shelf_life}
-                    onChange={(e) => setFormData({ ...formData, remaining_shelf_life: parseFloat(e.target.value) || 0 })}
+                    value={formData.remaining_shelf_life === 0 ? '' : formData.remaining_shelf_life}
+                    onChange={(e) => setFormData({ ...formData, remaining_shelf_life: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text font-mono focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -595,9 +632,9 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                   <input
                     type="number"
                     min="0"
-                    step="0.1"
-                    value={formData.handling_cost}
-                    onChange={(e) => setFormData({ ...formData, handling_cost: parseFloat(e.target.value) || 0 })}
+                    step="any"
+                    value={formData.handling_cost === 0 ? '' : formData.handling_cost}
+                    onChange={(e) => setFormData({ ...formData, handling_cost: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text font-mono focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -606,9 +643,9 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                   <input
                     type="number"
                     min="0"
-                    step="0.5"
-                    value={formData.procurement_cost}
-                    onChange={(e) => setFormData({ ...formData, procurement_cost: parseFloat(e.target.value) || 0 })}
+                    step="any"
+                    value={formData.procurement_cost === 0 ? '' : formData.procurement_cost}
+                    onChange={(e) => setFormData({ ...formData, procurement_cost: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-primary-text font-mono focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -636,7 +673,7 @@ export const InventoryPage: React.FC<InventoryPageProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-press inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white font-semibold shadow-xs disabled:opacity-50 cursor-pointer"
+                  className="btn-press inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white dark:text-neutral-950 font-bold shadow-xs disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>{isSubmitting ? 'Saving to Database...' : editingBatch ? 'Update Batch' : 'Register Batch'}</span>

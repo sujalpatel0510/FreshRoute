@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import type { DistributionPlan, EvaluationComparison } from '../types';
 import { useTheme } from './ThemeToggle';
+import { Tooltip as UiTooltip } from './Tooltip';
 
 interface AnalyticsPageProps {
   comparison: EvaluationComparison | null;
@@ -144,22 +145,25 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
           </div>
 
           <div className="flex items-center space-x-3">
-            <button
-              onClick={onRunComparison}
-              disabled={loading}
-              className="btn-press flex items-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
-            >
-              <TrendingUp className="w-4 h-4 text-accent" />
-              <span>{loading ? 'Simulating...' : 'Re-Run Benchmark'}</span>
-            </button>
-            <button
-              onClick={handleExportJSON}
-              className="btn-press flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-border bg-elevated hover:bg-border/60 text-primary-text text-xs font-semibold shadow-xs cursor-pointer shrink-0"
-              title="Download audit benchmark as JSON"
-            >
-              <Download className="w-3.5 h-3.5 text-muted-text" />
-              <span>Export Audit JSON</span>
-            </button>
+            <UiTooltip text="Simulate FIFO baseline vs FreshRoute FEFO under identical market parameters">
+              <button
+                onClick={onRunComparison}
+                disabled={loading}
+                className="btn-press flex items-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white dark:text-neutral-950 font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
+              >
+                <TrendingUp className="w-4 h-4 text-accent dark:text-neutral-950" />
+                <span>{loading ? 'Simulating...' : 'Re-Run Benchmark'}</span>
+              </button>
+            </UiTooltip>
+            <UiTooltip text="Download comprehensive allocation audit and comparison metrics as JSON">
+              <button
+                onClick={handleExportJSON}
+                className="btn-press flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-border bg-elevated hover:bg-border/60 text-primary-text text-xs font-semibold shadow-xs cursor-pointer shrink-0"
+              >
+                <Download className="w-3.5 h-3.5 text-muted-text" />
+                <span>Export Audit JSON</span>
+              </button>
+            </UiTooltip>
           </div>
         </div>
       </div>
@@ -167,70 +171,81 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
       {/* Key Benchmark Delta Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Spoilage Reduction */}
-        <div className="bg-gradient-to-br from-primary to-primary-hover text-white p-5 rounded-2xl shadow-xs">
-          <span className="text-xs font-semibold text-accent flex items-center justify-between">
-            <span>Spoilage Reduction vs Baseline</span>
-            <ShieldCheck className="w-4 h-4 text-white" />
-          </span>
-          <div className="text-3xl font-extrabold tracking-tight font-mono mt-2">
-            {comparison?.spoilage_reduction_percent != null
-              ? `${comparison.spoilage_reduction_percent.toFixed(1)}%`
-              : '100%'}
+        <UiTooltip text="Percentage of inventory spoilage eliminated by FEFO dispatch compared to standard FIFO" wrapperClassName="w-full h-full block">
+          <div className="bg-surface p-5 rounded-2xl border border-emerald-500/30 dark:border-emerald-500/40 shadow-xs relative overflow-hidden group h-full cursor-help">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
+            <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
+              <span>Spoilage Reduction vs Baseline</span>
+              <span className="p-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-4 h-4" />
+              </span>
+            </span>
+            <div className="text-3xl font-extrabold tracking-tight font-mono text-emerald-600 dark:text-emerald-400 mt-2">
+              {comparison?.spoilage_reduction_percent != null
+                ? `${comparison.spoilage_reduction_percent.toFixed(1)}%`
+                : '100%'}
+            </div>
+            <p className="text-[11px] text-muted-text mt-1">
+              {comparison?.spoilage_quantity_prevented_kg
+                ? `${comparison.spoilage_quantity_prevented_kg.toLocaleString()} kg loss eliminated`
+                : 'FEFO routing prevents premature transit spoilage'}
+            </p>
           </div>
-          <p className="text-[11px] text-white/90 mt-1">
-            {comparison?.spoilage_quantity_prevented_kg
-              ? `${comparison.spoilage_quantity_prevented_kg.toLocaleString()} kg loss eliminated`
-              : 'FEFO routing prevents premature transit spoilage'}
-          </p>
-        </div>
+        </UiTooltip>
 
         {/* Net Revenue Lift */}
-        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs">
-          <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
-            <span>Net Revenue Lift</span>
-            <TrendingUp className="w-4 h-4 text-primary" />
-          </span>
-          <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
-            +₹{(comparison?.net_revenue_lift || (freshroute?.net_revenue || 0) - (baseline?.net_revenue || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-          </div>
-          <p className="text-[11px] text-primary font-semibold mt-1 flex items-center space-x-1">
-            <ArrowUpRight className="w-3 h-3" />
-            <span>
-              {comparison?.net_revenue_lift_percent
-                ? `+${comparison.net_revenue_lift_percent.toFixed(2)}% margin boost`
-                : '+2.4% improved return'}
+        <UiTooltip text="Total monetary net gain after transport costs, handling fees, and markdown discounts" wrapperClassName="w-full h-full block">
+          <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs h-full cursor-help">
+            <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
+              <span>Net Revenue Lift</span>
+              <TrendingUp className="w-4 h-4 text-primary" />
             </span>
-          </p>
-        </div>
+            <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
+              +₹{(comparison?.net_revenue_lift || (freshroute?.net_revenue || 0) - (baseline?.net_revenue || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </div>
+            <p className="text-[11px] text-primary font-semibold mt-1 flex items-center space-x-1">
+              <ArrowUpRight className="w-3 h-3" />
+              <span>
+                {comparison?.net_revenue_lift_percent
+                  ? `+${comparison.net_revenue_lift_percent.toFixed(2)}% margin boost`
+                  : '+2.4% improved return'}
+              </span>
+            </p>
+          </div>
+        </UiTooltip>
 
         {/* Infeasible Prevented */}
-        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs">
-          <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
-            <span>Infeasible Dispatches Blocked</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          </span>
-          <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
-            {freshroute?.infeasible_prevented || 10}
+        <UiTooltip text="Dispatches rejected because travel time exceeded remaining produce shelf-life" wrapperClassName="w-full h-full block">
+          <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs h-full cursor-help">
+            <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
+              <span>Infeasible Dispatches Blocked</span>
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            </span>
+            <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
+              {freshroute?.infeasible_prevented || 10}
+            </div>
+            <p className="text-[11px] text-muted-text mt-1">
+              Transit duration & gate capacity guards
+            </p>
           </div>
-          <p className="text-[11px] text-muted-text mt-1">
-            Transit duration & gate capacity guards
-          </p>
-        </div>
+        </UiTooltip>
 
         {/* Solving Speed */}
-        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs">
-          <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
-            <span>Engine Solving Speed</span>
-            <Clock className="w-4 h-4 text-primary" />
-          </span>
-          <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
-            {freshroute?.execution_time_ms.toFixed(2) || '1.20'} ms
+        <UiTooltip text="Total execution time taken by the solver on backend FastAPI engine" wrapperClassName="w-full h-full block">
+          <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs h-full cursor-help">
+            <span className="text-xs font-semibold text-secondary-text flex items-center justify-between">
+              <span>Engine Solving Speed</span>
+              <Clock className="w-4 h-4 text-primary" />
+            </span>
+            <div className="text-2xl font-bold tracking-tight text-primary-text font-mono mt-2">
+              {freshroute?.execution_time_ms.toFixed(2) || '1.20'} ms
+            </div>
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center space-x-1">
+              <Sparkles className="w-3 h-3" />
+              <span>Target &lt; 2000 ms (Met with 99.9% headroom)</span>
+            </p>
           </div>
-          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center space-x-1">
-            <Sparkles className="w-3 h-3" />
-            <span>Target &lt; 2000 ms (Met with 99.9% headroom)</span>
-          </p>
-        </div>
+        </UiTooltip>
       </div>
 
       {/* Side-by-Side Detailed Metrics Table */}
@@ -246,7 +261,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-elevated/70 border-b border-border text-secondary-text uppercase tracking-wider font-semibold">
+            <thead className="bg-elevated/70 border-b border-border text-primary-text font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="py-3 px-4">Performance Indicator</th>
                 <th className="py-3 px-4 text-right">Baseline Strategy (FIFO)</th>

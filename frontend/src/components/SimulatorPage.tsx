@@ -14,6 +14,7 @@ import {
   Activity
 } from 'lucide-react';
 import type { Scenario, EvaluationComparison } from '../types';
+import { Tooltip } from './Tooltip';
 
 interface SimulatorPageProps {
   scenarios: Scenario[];
@@ -82,14 +83,16 @@ export const SimulatorPage: React.FC<SimulatorPageProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => handleSimulate(selectedKey)}
-          disabled={loading}
-          className="btn-press flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
-        >
-          <Play className={`w-4 h-4 fill-current ${loading ? 'animate-spin' : ''}`} />
-          <span>{loading ? 'Simulating Engine...' : 'Run Selected Shock Test'}</span>
-        </button>
+        <Tooltip text="Simulate real-world disruption effects across all supply chain nodes">
+          <button
+            onClick={() => handleSimulate(selectedKey)}
+            disabled={loading}
+            className="btn-press flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white dark:text-neutral-950 font-bold text-xs shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
+          >
+            <Play className={`w-4 h-4 fill-current ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Simulating Engine...' : 'Run Selected Shock Test'}</span>
+          </button>
+        </Tooltip>
       </div>
 
       {/* Scenario Selection Grid */}
@@ -99,73 +102,90 @@ export const SimulatorPage: React.FC<SimulatorPageProps> = ({
           const isSelected = selectedKey === sc.key;
 
           return (
-            <div
+            <Tooltip
               key={sc.key}
-              onClick={() => handleSimulate(sc.key)}
-              data-cursor="card"
-              data-cursor-label="Run"
-              className={`stagger-card btn-press p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
-                isSelected
-                  ? 'bg-primary/5 border-primary shadow-xs ring-1 ring-primary/20'
-                  : 'bg-surface border-border hover:border-primary/40'
-              }`}
+              text={`Click to run simulation under ${sc.name}`}
+              wrapperClassName="w-full h-full block"
             >
-              <div>
-                <div className="flex items-center justify-between">
-                  <div className={`p-2 rounded-xl ${
-                    isSelected 
-                      ? 'bg-primary text-white' 
-                      : 'bg-elevated text-secondary-text border border-border'
-                  }`}>
-                    <Icon className="w-4 h-4" />
+              <div
+                onClick={() => handleSimulate(sc.key)}
+                data-cursor="card"
+                data-cursor-label="Run"
+                className={`stagger-card btn-press p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between h-full ${
+                  isSelected
+                    ? 'bg-primary/5 border-primary shadow-xs ring-1 ring-primary/20'
+                    : 'bg-surface border-border hover:border-primary/40'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className={`p-2 rounded-xl ${
+                      isSelected 
+                        ? 'bg-primary text-white dark:text-neutral-950 font-bold' 
+                        : 'bg-elevated text-secondary-text border border-border'
+                    }`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                      isSelected 
+                        ? 'bg-primary/15 text-primary border-primary/30' 
+                        : 'bg-elevated text-muted-text border-border'
+                    }`}>
+                      {isSelected ? 'ACTIVE SCENARIO' : 'SELECT'}
+                    </span>
                   </div>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
-                    isSelected 
-                      ? 'bg-primary/15 text-primary border-primary/30' 
-                      : 'bg-elevated text-muted-text border-border'
-                  }`}>
-                    {isSelected ? 'ACTIVE SCENARIO' : 'SELECT'}
-                  </span>
+
+                  <h3 className="font-bold text-primary-text text-sm mt-3">{sc.name}</h3>
+                  <p className="text-xs text-secondary-text mt-1 leading-relaxed">{sc.description}</p>
                 </div>
 
-                <h3 className="font-bold text-primary-text text-sm mt-3">{sc.name}</h3>
-                <p className="text-xs text-secondary-text mt-1 leading-relaxed">{sc.description}</p>
+                {/* Stress Multipliers */}
+                <div className="mt-4 pt-3 border-t border-border flex flex-wrap gap-1.5 text-[10px] font-mono">
+                  {sc.travel_time_multiplier !== 1 && (
+                    <Tooltip text="Transit delay impact factor">
+                      <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-semibold cursor-help">
+                        Transit +{Math.round((sc.travel_time_multiplier - 1) * 100)}%
+                      </span>
+                    </Tooltip>
+                  )}
+                  {sc.shelf_life_multiplier !== 1 && (
+                    <Tooltip text="Shelf life degradation impact factor">
+                      <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-semibold cursor-help">
+                        Shelf Life -{Math.round((1 - sc.shelf_life_multiplier) * 100)}%
+                      </span>
+                    </Tooltip>
+                  )}
+                  {sc.demand_multiplier !== 1 && (
+                    <Tooltip text="Market demand contraction factor">
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-semibold cursor-help">
+                        Demand -{Math.round((1 - sc.demand_multiplier) * 100)}%
+                      </span>
+                    </Tooltip>
+                  )}
+                  {sc.capacity_multiplier !== 1 && (
+                    <Tooltip text="Fleet transit capacity reduction">
+                      <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-semibold cursor-help">
+                        Fleet -{Math.round((1 - sc.capacity_multiplier) * 100)}%
+                      </span>
+                    </Tooltip>
+                  )}
+                  {sc.transport_cost_multiplier !== 1 && (
+                    <Tooltip text="Logistics freight tariff inflation">
+                      <span className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 font-semibold cursor-help">
+                        Tariffs +{Math.round((sc.transport_cost_multiplier - 1) * 100)}%
+                      </span>
+                    </Tooltip>
+                  )}
+                  {sc.key === 'normal' && (
+                    <Tooltip text="Nominal benchmark operational baseline">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold cursor-help">
+                        1.0x Baseline Nominal
+                      </span>
+                    </Tooltip>
+                  )}
+                </div>
               </div>
-
-              {/* Stress Multipliers */}
-              <div className="mt-4 pt-3 border-t border-border flex flex-wrap gap-1.5 text-[10px] font-mono">
-                {sc.travel_time_multiplier !== 1 && (
-                  <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-semibold">
-                    Transit +{Math.round((sc.travel_time_multiplier - 1) * 100)}%
-                  </span>
-                )}
-                {sc.shelf_life_multiplier !== 1 && (
-                  <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-semibold">
-                    Shelf Life -{Math.round((1 - sc.shelf_life_multiplier) * 100)}%
-                  </span>
-                )}
-                {sc.demand_multiplier !== 1 && (
-                  <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-semibold">
-                    Demand -{Math.round((1 - sc.demand_multiplier) * 100)}%
-                  </span>
-                )}
-                {sc.capacity_multiplier !== 1 && (
-                  <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-semibold">
-                    Fleet -{Math.round((1 - sc.capacity_multiplier) * 100)}%
-                  </span>
-                )}
-                {sc.transport_cost_multiplier !== 1 && (
-                  <span className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 font-semibold">
-                    Tariffs +{Math.round((sc.transport_cost_multiplier - 1) * 100)}%
-                  </span>
-                )}
-                {sc.key === 'normal' && (
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold">
-                    1.0x Baseline Nominal
-                  </span>
-                )}
-              </div>
-            </div>
+            </Tooltip>
           );
         })}
       </div>
